@@ -1,0 +1,14 @@
+{
+    "recommendations": [
+      // Editor
+      "vscode-icons-team.vscode-icons",
+  
+      // Ruby
+      "Shopify.ruby-lsp",
+  
+      // Git
+      "eamodio.gitlens",
+      "waderyan.gitblame"
+    ]
+  }
+  
