@@ -28,8 +28,8 @@ Gem::Specification.new do |spec|
         f.start_with?(*%w[bin/ Gemfile .gitignore .rspec spec/ .github/ .rubocop.yml])
     end
   end
-  spec.bindir = "exe"
-  spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
+  spec.bindir = "bin"
+  spec.executables = ["tahweel"]
   spec.require_paths = ["lib"]
 
   spec.add_dependency "google-apis-drive_v3", "~> 0.74.0"

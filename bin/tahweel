@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+# frozen_string_literal: true
+
+$LOAD_PATH << File.expand_path("lib")
+
+require "tahweel"
+
+abort "Usage: tahweel <file_path>" if ARGV.empty?
+
+file_path = ARGV[0]
+
+begin
+  Tahweel.upload(file_path)
+rescue StandardError => e
+  abort "Error: #{e.message}"
+end
