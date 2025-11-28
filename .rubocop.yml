@@ -1,9 +1,17 @@
+plugins:
+  - rubocop-performance
+  - rubocop-rake
+  - rubocop-rspec
+
 AllCops:
   TargetRubyVersion: 3.2
-  Enabled: true
+  NewCops: enable
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes
 
 Style/StringLiteralsInInterpolation:
   EnforcedStyle: double_quotes
+
+RSpec/ExampleLength:
+  CountAsOne: ['method_call']
