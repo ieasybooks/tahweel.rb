@@ -1,6 +1,7 @@
 {
     "recommendations": [
       // Editor
+      "ms-vscode.live-server",
       "vscode-icons-team.vscode-icons",
   
       // Ruby
