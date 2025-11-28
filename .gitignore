@@ -135,3 +135,4 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/ruby,linux,windows,macos
 
 Gemfile.lock
+.rspec_status
