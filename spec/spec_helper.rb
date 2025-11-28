@@ -1,5 +1,17 @@
 # frozen_string_literal: true
 
+require "simplecov"
+
+SimpleCov.enable_coverage :branch
+SimpleCov.minimum_coverage line: 100, branch: 99
+SimpleCov.minimum_coverage_by_file line: 100
+SimpleCov.refuse_coverage_drop :line
+
+SimpleCov.start do
+  add_filter "/spec/"
+  add_filter "/bin/"
+end
+
 require "tahweel"
 
 RSpec.configure do |config|
