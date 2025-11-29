@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+# frozen_string_literal: true
+
+# Add the ../lib directory to the load path so we can require 'tahweel'
+$LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
+
+require "tahweel/authorizer"
+
+begin
+  Tahweel::Authorizer.clear_credentials
+rescue StandardError => e
+  abort "Error clearing credentials: #{e.message}"
+end

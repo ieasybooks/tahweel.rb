@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "google/apis/drive_v3"
 require "googleauth"
 require "googleauth/stores/file_token_store"
 require "socket"
@@ -30,6 +31,11 @@ module Tahweel
     # @return [Google::Auth::UserRefreshCredentials] The authorized credentials.
     def self.authorize = new.authorize
 
+    # Convenience class method to clear stored credentials.
+    #
+    # @return [void]
+    def self.clear_credentials = new.clear_credentials
+
     # Initializes a new Authorizer instance.
     # Sets up the Google Auth client and token store.
     def initialize
@@ -47,6 +53,16 @@ module Tahweel
       return credentials if credentials
 
       perform_oauth_flow
+    end
+
+    # Clears the stored credentials file.
+    #
+    # @return [void]
+    def clear_credentials
+      path = token_path
+      return unless File.exist?(path)
+
+      File.delete(path)
     end
 
     private

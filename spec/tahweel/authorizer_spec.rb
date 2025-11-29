@@ -31,6 +31,19 @@ RSpec.describe Tahweel::Authorizer do
     end
   end
 
+  describe ".clear_credentials" do
+    it "instantiates a new authorizer and delegates to #clear_credentials" do # rubocop:disable RSpec/MultipleExpectations,RSpec/ExampleLength
+      instance = instance_double(described_class)
+      allow(described_class).to receive(:new).and_return(instance)
+      allow(instance).to receive(:clear_credentials)
+
+      described_class.clear_credentials
+
+      expect(described_class).to have_received(:new)
+      expect(instance).to have_received(:clear_credentials)
+    end
+  end
+
   describe "#authorize" do
     context "when existing credentials are present" do
       it "returns the existing credentials without performing the OAuth flow" do # rubocop:disable RSpec/MultipleExpectations
@@ -85,6 +98,30 @@ RSpec.describe Tahweel::Authorizer do
         expect(server).to have_received(:close)
         expect(google_authorizer).not_to have_received(:get_and_store_credentials_from_code)
       end
+    end
+  end
+
+  describe "#clear_credentials" do
+    let(:token_path) { "/tmp/cache/tahweel/token.yaml" }
+
+    before do
+      # Mock FileTokenStore to avoid real file system errors during initialization
+      allow(Google::Auth::Stores::FileTokenStore).to receive(:new).and_return(:file_token_store)
+
+      allow(File).to receive(:exist?).with(token_path).and_return(true)
+      allow(File).to receive(:delete).with(token_path)
+      allow(authorizer).to receive(:token_path).and_return(token_path) # rubocop:disable RSpec/SubjectStub
+    end
+
+    it "deletes the credentials file if it exists" do
+      authorizer.clear_credentials
+      expect(File).to have_received(:delete).with(token_path)
+    end
+
+    it "does nothing if the credentials file does not exist" do
+      allow(File).to receive(:exist?).with(token_path).and_return(false)
+      authorizer.clear_credentials
+      expect(File).not_to have_received(:delete)
     end
   end
 

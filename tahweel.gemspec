@@ -30,7 +30,7 @@ Gem::Specification.new do |spec|
     end
   end
   spec.bindir = "bin"
-  spec.executables = ["tahweel"]
+  spec.executables = %w[tahweel tahweel-clear]
   spec.require_paths = ["lib"]
 
   spec.add_dependency "async", "~> 2.34.0"
