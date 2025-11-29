@@ -20,7 +20,7 @@ module Tahweel
       # @return [void]
       def write(texts, destination, options = {})
         separator = options[:page_separator] || PAGE_SEPARATOR
-        File.write(destination, texts.join(separator))
+        File.write(destination, texts.map(&:strip).join(separator))
       end
     end
   end

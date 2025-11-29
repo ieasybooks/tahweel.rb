@@ -21,7 +21,7 @@ module Tahweel
         structured_data = texts.map.with_index do |text, index|
           {
             page: index + 1,
-            content: text
+            content: text.strip
           }
         end
 
