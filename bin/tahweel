@@ -5,6 +5,7 @@
 # Add the ../lib directory to the load path so we can require 'tahweel'
 $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
 
+require "fileutils"
 require "tahweel"
 require "optparse"
 
@@ -35,7 +36,7 @@ parser = OptionParser.new do |opts| # rubocop:disable Metrics/BlockLength
     options[:concurrency] = n
   end
 
-  opts.on("-o", "--output FILE", String, "Output file path (optional)") do |o|
+  opts.on("-o", "--output DIR", String, "Output directory (default: current directory)") do |o|
     options[:output] = o
   end
 
@@ -76,7 +77,12 @@ end
 file_path = ARGV[0]
 
 begin
-  base_path = options[:output] || File.basename(file_path, ".*")
+  filename = File.basename(file_path, ".*")
+  output_dir = options[:output] || Dir.pwd
+
+  FileUtils.mkdir_p(output_dir)
+
+  base_path = File.join(output_dir, filename)
 
   if File.extname(file_path).downcase == ".pdf"
     texts = Tahweel.convert(
