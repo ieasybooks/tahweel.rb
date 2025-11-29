@@ -13,6 +13,8 @@ module Tahweel
   # @example Usage with a specific processor (Future-proofing)
   #   # text = Tahweel::Ocr.extract("image.png", processor: :tesseract)
   class Ocr
+    AVAILABLE_PROCESSORS = [:google_drive].freeze
+
     # Convenience method to extract text using a specific processor.
     #
     # @param file_path [String] Path to the image file.

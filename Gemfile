@@ -15,3 +15,5 @@ gem "rubocop", "~> 1.81"
 gem "rubocop-performance", "~> 1.26", ">= 1.26.1"
 gem "rubocop-rake", "~> 0.7.1"
 gem "rubocop-rspec", "~> 3.8"
+
+gem "pstore", "~> 0.2.0"

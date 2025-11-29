@@ -33,4 +33,23 @@ RSpec.describe Tahweel do
       )
     end
   end
+
+  describe ".extract" do
+    it "delegates to Tahweel::Ocr.extract" do # rubocop:disable RSpec/MultipleExpectations
+      allow(Tahweel::Ocr).to receive(:extract).and_return("Text")
+
+      result = described_class.extract("image.png", processor: :custom)
+
+      expect(result).to eq("Text")
+      expect(Tahweel::Ocr).to have_received(:extract).with("image.png", processor: :custom)
+    end
+
+    it "uses default processor when omitted" do
+      allow(Tahweel::Ocr).to receive(:extract).and_return("Text")
+
+      described_class.extract("image.png")
+
+      expect(Tahweel::Ocr).to have_received(:extract).with("image.png", processor: :google_drive)
+    end
+  end
 end
