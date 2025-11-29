@@ -51,7 +51,7 @@ RSpec.describe Tahweel::Converter do
 
     context "when processing fails" do
       before do
-        allow(ocr_engine).to receive(:extract).with(image_paths[0]).and_raise(RuntimeError, "OCR Error")
+        allow(converter).to receive(:process_images_concurrently).and_raise(RuntimeError, "OCR Error") # rubocop:disable RSpec/SubjectStub
       end
 
       it "ensures the temporary directory is cleaned up" do # rubocop:disable RSpec/MultipleExpectations
