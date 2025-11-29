@@ -30,10 +30,8 @@ module Tahweel
     # @raise [ArgumentError] If an unknown processor is specified.
     def initialize(processor: :google_drive)
       @processor = case processor
-                   when :google_drive
-                     Processors::GoogleDrive.new
-                   else
-                     raise ArgumentError, "Unknown processor: #{processor}"
+                   when :google_drive then Processors::GoogleDrive.new
+                   else raise ArgumentError, "Unknown processor: #{processor}"
                    end
     end
 

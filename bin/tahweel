@@ -11,10 +11,13 @@ require "optparse"
 options = {
   dpi: 150,
   processor: :google_drive,
-  concurrency: Tahweel::Converter::DEFAULT_CONCURRENCY
+  concurrency: Tahweel::Converter::DEFAULT_CONCURRENCY,
+  output: nil,
+  formats: [:txt],
+  page_separator: Tahweel::Writers::Txt::PAGE_SEPARATOR
 }
 
-parser = OptionParser.new do |opts|
+parser = OptionParser.new do |opts| # rubocop:disable Metrics/BlockLength
   opts.banner = "Usage: tahweel <file_path> [options]"
 
   opts.on("--dpi DPI", Integer, "DPI for PDF to Image conversion (default: 150)") do |d|
@@ -30,6 +33,27 @@ parser = OptionParser.new do |opts|
 
   opts.on("--concurrency N", Integer, "Max concurrent OCR operations (default: 12)") do |n|
     options[:concurrency] = n
+  end
+
+  opts.on("-o", "--output FILE", String, "Output file path (optional)") do |o|
+    options[:output] = o
+  end
+
+  opts.on(
+    "--formats FORMATS", Array,
+    "Output formats (comma-separated, default: txt). Available: #{Tahweel::Writer::AVAILABLE_FORMATS.join(", ")}"
+  ) do |formats|
+    options[:formats] = formats.map(&:to_sym)
+
+    invalid_formats = options[:formats] - Tahweel::Writer::AVAILABLE_FORMATS
+    abort "Error: Invalid format(s): #{invalid_formats.join(", ")}" unless invalid_formats.empty?
+  end
+
+  opts.on(
+    "--page-separator SEPARATOR", String,
+    "Separator between pages in TXT output (default: #{Tahweel::Writers::Txt::PAGE_SEPARATOR.gsub("\n", "\\n")})"
+  ) do |s|
+    options[:page_separator] = s.gsub("\\n", "\n")
   end
 
   opts.on("-h", "--help", "Prints this help") do
@@ -52,8 +76,9 @@ end
 file_path = ARGV[0]
 
 begin
+  base_path = options[:output] || File.basename(file_path, ".*")
+
   if File.extname(file_path).downcase == ".pdf"
-    puts "Detected PDF file. Converting to text..."
     texts = Tahweel.convert(
       file_path,
       dpi: options[:dpi],
@@ -61,15 +86,21 @@ begin
       concurrency: options[:concurrency]
     )
 
-    puts "\n--- Result ---"
-    texts.each_with_index do |text, index|
-      puts "\n[Page #{index + 1}]"
-      puts text
-      puts "-" * 20
-    end
+    Tahweel::Writer.write(
+      texts,
+      base_path,
+      formats: options[:formats],
+      page_separator: options[:page_separator]
+    )
   else
-    puts "Detected image file. Extracting text..."
-    puts Tahweel.extract(file_path, processor: options[:processor])
+    text = Tahweel.extract(file_path, processor: options[:processor])
+
+    Tahweel::Writer.write(
+      [text],
+      base_path,
+      formats: options[:formats],
+      page_separator: options[:page_separator]
+    )
   end
 rescue StandardError => e
   abort "Error: #{e.message}"
