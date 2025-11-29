@@ -11,13 +11,14 @@ RSpec.describe Tahweel do
     it "delegates to Tahweel::Converter.convert" do # rubocop:disable RSpec/MultipleExpectations
       allow(Tahweel::Converter).to receive(:convert).and_return(["Text"])
 
-      result = described_class.convert("test.pdf", dpi: 300, processor: :custom)
+      result = described_class.convert("test.pdf", dpi: 300, processor: :custom, concurrency: 5)
 
       expect(result).to eq(["Text"])
       expect(Tahweel::Converter).to have_received(:convert).with(
         "test.pdf",
         dpi: 300,
-        processor: :custom
+        processor: :custom,
+        concurrency: 5
       )
     end
 
@@ -29,7 +30,8 @@ RSpec.describe Tahweel do
       expect(Tahweel::Converter).to have_received(:convert).with(
         "test.pdf",
         dpi: Tahweel::PdfSplitter::DEFAULT_DPI,
-        processor: :google_drive
+        processor: :google_drive,
+        concurrency: Tahweel::Converter::DEFAULT_CONCURRENCY
       )
     end
   end

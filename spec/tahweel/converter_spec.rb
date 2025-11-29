@@ -33,7 +33,12 @@ RSpec.describe Tahweel::Converter do
 
       described_class.convert(pdf_path)
 
-      expect(described_class).to have_received(:new).with(pdf_path, dpi: 150, processor: :google_drive)
+      expect(described_class).to have_received(:new).with(
+        pdf_path,
+        dpi: 150,
+        processor: :google_drive,
+        concurrency: Tahweel::Converter::DEFAULT_CONCURRENCY
+      )
       expect(instance).to have_received(:convert)
     end
   end
@@ -61,7 +66,7 @@ RSpec.describe Tahweel::Converter do
     end
 
     context "with custom options" do
-      subject(:converter) { described_class.new(pdf_path, dpi: 300, processor: :custom) }
+      subject(:converter) { described_class.new(pdf_path, dpi: 300, processor: :custom, concurrency: 5) }
 
       before do
         allow(Tahweel::PdfSplitter).to receive(:split).with(pdf_path, dpi: 300).and_return(split_result)
@@ -73,6 +78,13 @@ RSpec.describe Tahweel::Converter do
 
         expect(Tahweel::PdfSplitter).to have_received(:split).with(pdf_path, dpi: 300)
         expect(Tahweel::Ocr).to have_received(:new).with(processor: :custom)
+      end
+
+      it "uses the custom concurrency limit" do
+        # We need to spy on Async::Semaphore to verify the limit
+        allow(Async::Semaphore).to receive(:new).and_call_original
+        converter.convert
+        expect(Async::Semaphore).to have_received(:new).with(5, parent: anything)
       end
     end
   end

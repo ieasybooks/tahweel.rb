@@ -14,9 +14,15 @@ module Tahweel # rubocop:disable Style/Documentation
   # @param pdf_path [String] Path to the PDF file.
   # @param dpi [Integer] DPI for PDF to image conversion (default: 150).
   # @param processor [Symbol] OCR processor to use (default: :google_drive).
+  # @param concurrency [Integer] Max concurrent OCR operations (default: 12).
   # @return [Array<String>] An array containing the text of each page.
-  def self.convert(pdf_path, dpi: PdfSplitter::DEFAULT_DPI, processor: :google_drive)
-    Converter.convert(pdf_path, dpi:, processor:)
+  def self.convert(
+    pdf_path,
+    dpi: PdfSplitter::DEFAULT_DPI,
+    processor: :google_drive,
+    concurrency: Converter::DEFAULT_CONCURRENCY
+  )
+    Converter.convert(pdf_path, dpi:, processor:, concurrency:)
   end
 
   # Extracts text from an image file using the specified OCR processor.

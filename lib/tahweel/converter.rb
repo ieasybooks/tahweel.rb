@@ -15,16 +15,21 @@ module Tahweel
   # 4. Cleans up temporary files.
   class Converter
     # Max concurrent OCR operations to avoid hitting API rate limits too hard.
-    CONCURRENCY_LIMIT = 12
+    DEFAULT_CONCURRENCY = 12
 
     # Convenience method to convert a PDF file to text.
     #
     # @param pdf_path [String] Path to the PDF file.
     # @param dpi [Integer] DPI for PDF to image conversion (default: 150).
     # @param processor [Symbol] OCR processor to use (default: :google_drive).
+    # @param concurrency [Integer] Max concurrent OCR operations (default: 12).
     # @return [Array<String>] An array containing the text of each page.
-    def self.convert(pdf_path, dpi: PdfSplitter::DEFAULT_DPI, processor: :google_drive)
-      new(pdf_path, dpi:, processor:).convert
+    def self.convert(
+      pdf_path, dpi: PdfSplitter::DEFAULT_DPI,
+      processor: :google_drive,
+      concurrency: DEFAULT_CONCURRENCY
+    )
+      new(pdf_path, dpi:, processor:, concurrency:).convert
     end
 
     # Initializes the Converter.
@@ -32,10 +37,12 @@ module Tahweel
     # @param pdf_path [String] Path to the PDF file.
     # @param dpi [Integer] DPI for PDF to image conversion.
     # @param processor [Symbol] OCR processor to use.
-    def initialize(pdf_path, dpi: PdfSplitter::DEFAULT_DPI, processor: :google_drive)
+    # @param concurrency [Integer] Max concurrent OCR operations.
+    def initialize(pdf_path, dpi: PdfSplitter::DEFAULT_DPI, processor: :google_drive, concurrency: DEFAULT_CONCURRENCY)
       @pdf_path = pdf_path
       @dpi = dpi
       @processor_type = processor
+      @concurrency = concurrency
     end
 
     # Executes the conversion process.
@@ -61,7 +68,7 @@ module Tahweel
     def process_images_concurrently(image_paths, ocr_engine, texts)
       Async do
         barrier = Async::Barrier.new
-        semaphore = Async::Semaphore.new(CONCURRENCY_LIMIT, parent: barrier)
+        semaphore = Async::Semaphore.new(@concurrency, parent: barrier)
 
         image_paths.each_with_index do |image_path, index|
           semaphore.async do

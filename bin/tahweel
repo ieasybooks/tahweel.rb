@@ -10,7 +10,8 @@ require "optparse"
 
 options = {
   dpi: 150,
-  processor: :google_drive
+  processor: :google_drive,
+  concurrency: Tahweel::Converter::DEFAULT_CONCURRENCY
 }
 
 parser = OptionParser.new do |opts|
@@ -25,6 +26,10 @@ parser = OptionParser.new do |opts|
     "OCR processor to use (default: google_drive). Available: #{Tahweel::Ocr::AVAILABLE_PROCESSORS.join(", ")}"
   ) do |p|
     options[:processor] = p
+  end
+
+  opts.on("--concurrency N", Integer, "Max concurrent OCR operations (default: 12)") do |n|
+    options[:concurrency] = n
   end
 
   opts.on("-h", "--help", "Prints this help") do
@@ -49,7 +54,12 @@ file_path = ARGV[0]
 begin
   if File.extname(file_path).downcase == ".pdf"
     puts "Detected PDF file. Converting to text..."
-    texts = Tahweel.convert(file_path, dpi: options[:dpi], processor: options[:processor])
+    texts = Tahweel.convert(
+      file_path,
+      dpi: options[:dpi],
+      processor: options[:processor],
+      concurrency: options[:concurrency]
+    )
 
     puts "\n--- Result ---"
     texts.each_with_index do |text, index|
