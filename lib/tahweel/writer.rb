@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
 require_relative "writers/txt"
+require_relative "writers/docx"
 
 module Tahweel
   # Factory class for writing extracted text to different formats.
   class Writer
-    AVAILABLE_FORMATS = [:txt].freeze
+    AVAILABLE_FORMATS = %i[txt docx].freeze
 
     # Convenience method to write texts to files in the specified formats.
     #
@@ -25,6 +26,7 @@ module Tahweel
     def initialize(format: :txt)
       @writer = case format
                 when :txt then Writers::Txt.new
+                when :docx then Writers::Docx.new
                 else raise ArgumentError, "Unknown format: #{format}"
                 end
     end

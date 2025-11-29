@@ -26,13 +26,13 @@ parser = OptionParser.new do |opts| # rubocop:disable Metrics/BlockLength
   end
 
   opts.on(
-    "--processor PROCESSOR", Tahweel::Ocr::AVAILABLE_PROCESSORS,
+    "-p", "--processor PROCESSOR", Tahweel::Ocr::AVAILABLE_PROCESSORS,
     "OCR processor to use (default: google_drive). Available: #{Tahweel::Ocr::AVAILABLE_PROCESSORS.join(", ")}"
   ) do |p|
     options[:processor] = p
   end
 
-  opts.on("--concurrency N", Integer, "Max concurrent OCR operations (default: 12)") do |n|
+  opts.on("-c", "--concurrency N", Integer, "Max concurrent OCR operations (default: 12)") do |n|
     options[:concurrency] = n
   end
 
@@ -41,7 +41,7 @@ parser = OptionParser.new do |opts| # rubocop:disable Metrics/BlockLength
   end
 
   opts.on(
-    "--formats FORMATS", Array,
+    "-f", "--formats FORMATS", Array,
     "Output formats (comma-separated, default: txt). Available: #{Tahweel::Writer::AVAILABLE_FORMATS.join(", ")}"
   ) do |formats|
     options[:formats] = formats.map(&:to_sym)

@@ -34,6 +34,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "async", "~> 2.34.0"
+  spec.add_dependency "caracal", "~> 1.4"
   spec.add_dependency "google-apis-drive_v3", "~> 0.74.0"
   spec.add_dependency "googleauth", "~> 1.16"
   spec.add_dependency "launchy", "~> 3.1"

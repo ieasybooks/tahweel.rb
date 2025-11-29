@@ -7,11 +7,16 @@ RSpec.describe Tahweel::Writer do
   let(:texts) { ["Text"] }
   let(:base_path) { "output" }
   let(:mock_txt_writer) { instance_double(Tahweel::Writers::Txt) }
+  let(:mock_docx_writer) { instance_double(Tahweel::Writers::Docx) }
 
   before do
     allow(Tahweel::Writers::Txt).to receive(:new).and_return(mock_txt_writer)
     allow(mock_txt_writer).to receive(:write)
     allow(mock_txt_writer).to receive(:extension).and_return("txt")
+
+    allow(Tahweel::Writers::Docx).to receive(:new).and_return(mock_docx_writer)
+    allow(mock_docx_writer).to receive(:write)
+    allow(mock_docx_writer).to receive(:extension).and_return("docx")
   end
 
   describe ".write" do
@@ -36,6 +41,11 @@ RSpec.describe Tahweel::Writer do
     it "initializes with :txt writer explicitly" do
       described_class.new(format: :txt)
       expect(Tahweel::Writers::Txt).to have_received(:new)
+    end
+
+    it "initializes with :docx writer explicitly" do
+      described_class.new(format: :docx)
+      expect(Tahweel::Writers::Docx).to have_received(:new)
     end
 
     it "raises ArgumentError for unknown formats" do
