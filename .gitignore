@@ -136,3 +136,4 @@ $RECYCLE.BIN/
 
 Gemfile.lock
 .rspec_status
+test.*
