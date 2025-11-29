@@ -5,108 +5,13 @@
 # Add the ../lib directory to the load path so we can require 'tahweel'
 $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
 
-require "fileutils"
 require "tahweel"
-require "optparse"
-
-options = {
-  dpi: 150,
-  processor: :google_drive,
-  concurrency: Tahweel::Converter::DEFAULT_CONCURRENCY,
-  output: nil,
-  formats: [:txt],
-  page_separator: Tahweel::Writers::Txt::PAGE_SEPARATOR
-}
-
-parser = OptionParser.new do |opts| # rubocop:disable Metrics/BlockLength
-  opts.banner = "Usage: tahweel <file_path> [options]"
-
-  opts.on("--dpi DPI", Integer, "DPI for PDF to Image conversion (default: 150)") do |d|
-    options[:dpi] = d
-  end
-
-  opts.on(
-    "-p", "--processor PROCESSOR", Tahweel::Ocr::AVAILABLE_PROCESSORS,
-    "OCR processor to use (default: google_drive). Available: #{Tahweel::Ocr::AVAILABLE_PROCESSORS.join(", ")}"
-  ) do |p|
-    options[:processor] = p
-  end
-
-  opts.on("-c", "--concurrency N", Integer, "Max concurrent OCR operations (default: 12)") do |n|
-    options[:concurrency] = n
-  end
-
-  opts.on("-o", "--output DIR", String, "Output directory (default: current directory)") do |o|
-    options[:output] = o
-  end
-
-  opts.on(
-    "-f", "--formats FORMATS", Array,
-    "Output formats (comma-separated, default: txt). Available: #{Tahweel::Writer::AVAILABLE_FORMATS.join(", ")}"
-  ) do |formats|
-    options[:formats] = formats.map(&:to_sym)
-
-    invalid_formats = options[:formats] - Tahweel::Writer::AVAILABLE_FORMATS
-    abort "Error: Invalid format(s): #{invalid_formats.join(", ")}" unless invalid_formats.empty?
-  end
-
-  opts.on(
-    "--page-separator SEPARATOR", String,
-    "Separator between pages in TXT output (default: #{Tahweel::Writers::Txt::PAGE_SEPARATOR.gsub("\n", "\\n")})"
-  ) do |s|
-    options[:page_separator] = s.gsub("\\n", "\n")
-  end
-
-  opts.on("-h", "--help", "Prints this help") do
-    puts opts
-    exit
-  end
-end
 
 begin
-  parser.parse!
-rescue OptionParser::InvalidOption => e
-  abort "Error: #{e.message}"
-end
+  options = Tahweel::CLI::Options.parse(ARGV)
 
-if ARGV.empty?
-  puts parser
-  exit 1
-end
-
-file_path = ARGV[0]
-
-begin
-  filename = File.basename(file_path, ".*")
-  output_dir = options[:output] || Dir.pwd
-
-  FileUtils.mkdir_p(output_dir)
-
-  base_path = File.join(output_dir, filename)
-
-  if File.extname(file_path).downcase == ".pdf"
-    texts = Tahweel.convert(
-      file_path,
-      dpi: options[:dpi],
-      processor: options[:processor],
-      concurrency: options[:concurrency]
-    )
-
-    Tahweel::Writer.write(
-      texts,
-      base_path,
-      formats: options[:formats],
-      page_separator: options[:page_separator]
-    )
-  else
-    text = Tahweel.extract(file_path, processor: options[:processor])
-
-    Tahweel::Writer.write(
-      [text],
-      base_path,
-      formats: options[:formats],
-      page_separator: options[:page_separator]
-    )
+  Tahweel::CLI::FileCollector.collect(ARGV[0], extensions: options[:extensions]).each do |file|
+    Tahweel::CLI::FileProcessor.process(file, options)
   end
 rescue StandardError => e
   abort "Error: #{e.message}"

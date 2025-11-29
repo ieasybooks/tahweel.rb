@@ -59,7 +59,7 @@ RSpec.describe Tahweel::Processors::GoogleDrive do
       it "performs the upload, download, and delete flow with cleanup" do # rubocop:disable RSpec/MultipleExpectations,RSpec/ExampleLength
         allow(mock_service).to receive(:export_file) do |_file_id, _mime, options|
           # Simulate raw Google Drive output with separators and weird newlines
-          options[:download_dest].write("________________\r\nExtracted Text\r\n")
+          options[:download_dest].write("﻿________________\r\nExtracted Text\r\n")
           options[:download_dest].rewind
         end
 

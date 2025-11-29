@@ -6,6 +6,9 @@ require_relative "tahweel/pdf_splitter"
 require_relative "tahweel/ocr"
 require_relative "tahweel/converter"
 require_relative "tahweel/writer"
+require_relative "tahweel/cli/file_processor"
+require_relative "tahweel/cli/file_collector"
+require_relative "tahweel/cli/options"
 
 module Tahweel # rubocop:disable Style/Documentation
   class Error < StandardError; end
