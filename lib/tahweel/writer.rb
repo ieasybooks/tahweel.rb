@@ -2,11 +2,12 @@
 
 require_relative "writers/txt"
 require_relative "writers/docx"
+require_relative "writers/json"
 
 module Tahweel
   # Factory class for writing extracted text to different formats.
   class Writer
-    AVAILABLE_FORMATS = %i[txt docx].freeze
+    AVAILABLE_FORMATS = %i[txt docx json].freeze
 
     # Convenience method to write texts to files in the specified formats.
     #
@@ -27,6 +28,7 @@ module Tahweel
       @writer = case format
                 when :txt then Writers::Txt.new
                 when :docx then Writers::Docx.new
+                when :json then Writers::Json.new
                 else raise ArgumentError, "Unknown format: #{format}"
                 end
     end
