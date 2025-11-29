@@ -42,7 +42,7 @@ module Tahweel
         file_id = upload_file(file_path)
 
         begin
-          download_text(file_id)
+          download_text(file_id).gsub("\r\n", "\n").gsub("________________", "").strip
         ensure
           delete_file(file_id)
         end
