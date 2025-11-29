@@ -28,9 +28,7 @@ module Tahweel
       pdf_path, dpi: PdfSplitter::DEFAULT_DPI,
       processor: :google_drive,
       concurrency: DEFAULT_CONCURRENCY
-    )
-      new(pdf_path, dpi:, processor:, concurrency:).convert
-    end
+    ) = new(pdf_path, dpi:, processor:, concurrency:).convert
 
     # Initializes the Converter.
     #
@@ -71,9 +69,7 @@ module Tahweel
         semaphore = Async::Semaphore.new(@concurrency, parent: barrier)
 
         image_paths.each_with_index do |image_path, index|
-          semaphore.async do
-            texts[index] = ocr_engine.extract(image_path)
-          end
+          semaphore.async { texts[index] = ocr_engine.extract(image_path) }
         end
 
         barrier.wait

@@ -20,9 +20,7 @@ module Tahweel
     # @param file_path [String] Path to the image file.
     # @param processor [Symbol] The processor to use (default: :google_drive).
     # @return [String] The extracted text.
-    def self.extract(file_path, processor: :google_drive)
-      new(processor: processor).extract(file_path)
-    end
+    def self.extract(file_path, processor: :google_drive) = new(processor: processor).extract(file_path)
 
     # Initializes the OCR engine with a specific processor strategy.
     #
@@ -39,8 +37,6 @@ module Tahweel
     #
     # @param file_path [String] Path to the image file.
     # @return [String] The extracted text.
-    def extract(file_path)
-      @processor.extract(file_path)
-    end
+    def extract(file_path) = @processor.extract(file_path)
   end
 end

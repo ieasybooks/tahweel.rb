@@ -15,9 +15,7 @@ module Tahweel
     # @param options [Hash] Options for writers.
     # @return [void]
     def self.write(texts, base_path, formats: [:txt], **options)
-      formats.each do |format|
-        new(format: format).write(texts, base_path, **options)
-      end
+      formats.each { new(format: _1).write(texts, base_path, **options) }
     end
 
     # Initializes the Writer with a specific format strategy.
@@ -37,8 +35,6 @@ module Tahweel
     # @param texts [Array<String>] The extracted texts.
     # @param base_path [String] The base output file path.
     # @param options [Hash] Options to pass to the writer.
-    def write(texts, base_path, **options)
-      @writer.write(texts, "#{base_path}.#{@writer.extension}", options)
-    end
+    def write(texts, base_path, **options) = @writer.write(texts, "#{base_path}.#{@writer.extension}", options)
   end
 end

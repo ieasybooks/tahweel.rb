@@ -84,11 +84,7 @@ module Tahweel
       #
       # @param file_id [String] The ID of the file to delete.
       # @return [void]
-      def delete_file(file_id)
-        execute_with_retry do
-          @service.delete_file(file_id)
-        end
-      end
+      def delete_file(file_id) = execute_with_retry { @service.delete_file(file_id) }
 
       # Executes a block with infinite retries and exponential backoff.
       # Designed to handle transient errors (Rate Limits, Network issues, Server errors).

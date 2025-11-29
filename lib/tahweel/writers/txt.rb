@@ -9,9 +9,7 @@ module Tahweel
       # Returns the file extension for this writer.
       #
       # @return [String] The file extension.
-      def extension
-        "txt"
-      end
+      def extension = "txt"
 
       # Writes the extracted texts to a file.
       #

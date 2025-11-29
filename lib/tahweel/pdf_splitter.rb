@@ -19,9 +19,7 @@ module Tahweel
     # @param pdf_path [String] The local file path to the PDF document.
     # @param dpi [Integer] The resolution (Dots Per Inch) for rendering the PDF pages. Defaults to 150.
     # @return [Hash] A hash containing the :folder_path (String) and :image_paths (Array<String>).
-    def self.split(pdf_path, dpi: DEFAULT_DPI)
-      new(pdf_path, dpi:).split
-    end
+    def self.split(pdf_path, dpi: DEFAULT_DPI) = new(pdf_path, dpi:).split
 
     # Initializes a new PdfSplitter instance.
     #
@@ -84,11 +82,7 @@ module Tahweel
     end
 
     # Iterates through all pages and extracts them.
-    def process_pages
-      total_pages.times do |page_num|
-        extract_page(page_num)
-      end
-    end
+    def process_pages = total_pages.times { extract_page(_1) }
 
     # Calculates the total number of pages in the PDF by loading the first page metadata.
     # @return [Integer] The page count.

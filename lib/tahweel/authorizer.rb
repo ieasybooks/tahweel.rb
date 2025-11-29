@@ -28,9 +28,7 @@ module Tahweel
     # Instantiates the Authorizer and calls {#authorize}.
     #
     # @return [Google::Auth::UserRefreshCredentials] The authorized credentials.
-    def self.authorize
-      new.authorize
-    end
+    def self.authorize = new.authorize
 
     # Initializes a new Authorizer instance.
     # Sets up the Google Auth client and token store.
@@ -90,9 +88,7 @@ module Tahweel
     end
 
     # Opens the system default browser to the Google Authorization URL.
-    def open_browser_for_auth
-      Launchy.open(@authorizer.get_authorization_url(base_url: REDIRECT_URI))
-    end
+    def open_browser_for_auth = Launchy.open(@authorizer.get_authorization_url(base_url: REDIRECT_URI))
 
     # Listens on the local server for the OAuth callback request.
     # Handles multiple incoming requests to filter out noise (like favicon.ico).
@@ -149,8 +145,6 @@ module Tahweel
     # Sends a 404 Not Found response to the browser.
     #
     # @param socket [TCPSocket] The client socket.
-    def respond_with_not_found(socket)
-      socket.print "HTTP/1.1 404 Not Found\r\n\r\n"
-    end
+    def respond_with_not_found(socket) = socket.print "HTTP/1.1 404 Not Found\r\n\r\n"
   end
 end

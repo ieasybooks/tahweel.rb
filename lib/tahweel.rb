@@ -22,16 +22,12 @@ module Tahweel # rubocop:disable Style/Documentation
     dpi: PdfSplitter::DEFAULT_DPI,
     processor: :google_drive,
     concurrency: Converter::DEFAULT_CONCURRENCY
-  )
-    Converter.convert(pdf_path, dpi:, processor:, concurrency:)
-  end
+  ) = Converter.convert(pdf_path, dpi:, processor:, concurrency:)
 
   # Extracts text from an image file using the specified OCR processor.
   #
   # @param image_path [String] Path to the image file.
   # @param processor [Symbol] OCR processor to use (default: :google_drive).
   # @return [String] The extracted text.
-  def self.extract(image_path, processor: :google_drive)
-    Ocr.extract(image_path, processor:)
-  end
+  def self.extract(image_path, processor: :google_drive) = Ocr.extract(image_path, processor:)
 end
