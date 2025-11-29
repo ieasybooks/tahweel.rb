@@ -13,6 +13,12 @@ module Tahweel
 
       # Writes the extracted texts to a file.
       #
+      # It applies several transformations to the text before writing:
+      # 1. Normalizes line endings to `\n`.
+      # 2. Collapses consecutive identical whitespace characters.
+      # 3. Compacts the text by merging short lines if the page is too long (> 40 lines).
+      # 4. Determines text alignment (RTL/LTR) based on content.
+      #
       # @param texts [Array<String>] The extracted texts (one per page).
       # @param destination [String] The output file path.
       # @param options [Hash] Options for writing (unused for now).
@@ -20,12 +26,57 @@ module Tahweel
       def write(texts, destination, options = {}) # rubocop:disable Lint/UnusedMethodArgument
         Caracal::Document.save(destination) do |docx|
           texts.each_with_index do |text, index|
-            docx.p text.gsub(/(\r\n)+/, "\n").gsub(/(\s)\1+/, '\1').strip
+            text = text.gsub(/(\r\n)+/, "\n").gsub(/(\s)\1+/, '\1').strip
+            text = compact_shortest_lines(text) while expected_lines_in_page(text) > 40
+
+            docx.p text, size: 20, align: alignment_for(text)
 
             docx.page if index < texts.size - 1
           end
         end
       end
+
+      private
+
+      # Determines the text alignment based on the ratio of Arabic to non-Arabic characters.
+      #
+      # @param text [String] The text to analyze.
+      # @return [Symbol] :right if Arabic characters dominate, :left otherwise.
+      def alignment_for(text)
+        arabic_chars_count = text.scan(/\p{Arabic}/).count
+        other_chars_count = text.scan(/[^\p{Arabic}\p{P}\d\s]/).count
+
+        arabic_chars_count >= other_chars_count ? :right : :left
+      end
+
+      # Estimates the number of lines the text will occupy on a page.
+      #
+      # Assumes a line wraps if it exceeds 80 characters.
+      #
+      # @param text [String] The text to analyze.
+      # @return [Integer] The estimated line count.
+      def expected_lines_in_page(text) = text.count("\n") + 1 + text.split("\n").count { _1.length > 80 }
+
+      # Compacts the text by merging the two shortest adjacent lines.
+      #
+      # @param text [String] The text to compact.
+      # @return [String] The compacted text.
+      def compact_shortest_lines(text)
+        lines = text.split("\n")
+        return text if lines.size < 2
+
+        index = find_merge_index(lines)
+        lines[index] = "#{lines[index]} #{lines[index + 1]}"
+        lines.delete_at(index + 1)
+
+        lines.join("\n")
+      end
+
+      # Finds the index of the first line in the pair of adjacent lines with the minimum combined length.
+      #
+      # @param lines [Array<String>] The lines to analyze.
+      # @return [Integer] The index of the first line in the optimal pair.
+      def find_merge_index(lines) = (0...(lines.size - 1)).min_by { lines[_1].length + lines[_1 + 1].length }
     end
   end
 end
