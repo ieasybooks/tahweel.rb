@@ -101,7 +101,6 @@ module Tahweel
         rescue Google::Apis::RateLimitError, Google::Apis::TransmissionError, Google::Apis::ServerError => e
           # Exponential backoff with a cap of 60 seconds + jitter
           wait_time = [2**retries, 60].min + rand
-          puts "Rate limit, network, or server error (#{e.class}). Retrying in #{wait_time.round(2)} seconds..."
           sleep wait_time
           retries += 1
           retry
