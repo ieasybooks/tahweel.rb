@@ -80,6 +80,11 @@ module Tahweel
           options[:extensions] = e
         end
 
+        opts.on("-v", "--version", "Prints the version") do
+          puts Tahweel::VERSION
+          exit
+        end
+
         opts.on("-h", "--help", "Prints this help") do
           puts opts
           exit

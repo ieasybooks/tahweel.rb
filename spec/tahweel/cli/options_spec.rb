@@ -84,6 +84,16 @@ RSpec.describe Tahweel::CLI::Options do
       end
     end
 
+    context "when version option is provided" do
+      let(:args) { ["--version"] }
+
+      it "prints version and exits successfully" do # rubocop:disable RSpec/MultipleExpectations
+        expect { described_class.parse(args) }
+          .to output(/#{Tahweel::VERSION}/o).to_stdout
+          .and raise_error(SystemExit) { |error| expect(error.status).to eq(0) }
+      end
+    end
+
     context "when extensions are provided" do
       let(:args) { ["input_dir", "--extensions", "txt,md"] }
 
