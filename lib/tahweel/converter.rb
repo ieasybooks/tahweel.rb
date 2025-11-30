@@ -3,9 +3,6 @@
 require_relative "pdf_splitter"
 require_relative "ocr"
 require "fileutils"
-require "async"
-require "async/barrier"
-require "async/semaphore"
 
 module Tahweel
   # Orchestrates the full conversion process:
@@ -48,30 +45,39 @@ module Tahweel
     # @return [Array<String>] An array containing the text of each page.
     def convert
       image_paths, temp_dir = PdfSplitter.split(@pdf_path, dpi: @dpi).values_at(:image_paths, :folder_path)
-
       ocr_engine = Ocr.new(processor: @processor_type)
-      texts = Array.new(image_paths.size)
 
       begin
-        process_images_concurrently(image_paths, ocr_engine, texts)
+        process_images(image_paths, ocr_engine)
       ensure
         FileUtils.rm_rf(temp_dir)
       end
-
-      texts
     end
 
     private
 
-    def process_images_concurrently(image_paths, ocr_engine, texts)
-      barrier = Async::Barrier.new
-      semaphore = Async::Semaphore.new(@concurrency, parent: barrier)
+    def process_images(image_paths, ocr_engine)
+      texts = Array.new(image_paths.size)
 
-      image_paths.each_with_index do |image_path, index|
-        semaphore.async { texts[index] = ocr_engine.extract(image_path) }
+      queue = Queue.new
+      image_paths.each_with_index { |path, index| queue << [path, index] }
+
+      workers = Array.new(@concurrency) { Thread.new { process_queue(queue, ocr_engine, texts) } }
+      workers.each(&:join)
+
+      texts
+    end
+
+    def process_queue(queue, ocr_engine, texts)
+      until queue.empty?
+        begin
+          path, index = queue.pop(true)
+        rescue ThreadError
+          break
+        end
+
+        texts[index] = ocr_engine.extract(path)
       end
-
-      barrier.wait
     end
   end
 end

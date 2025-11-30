@@ -2,32 +2,50 @@
 
 # frozen_string_literal: true
 
-require "async"
-require "async/barrier"
-require "async/semaphore"
-
 # Add the ../lib directory to the load path so we can require 'tahweel'
 $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
 
 require "tahweel"
+require "etc"
 
 begin
   options = Tahweel::CLI::Options.parse(ARGV)
-
   input_path = File.expand_path(ARGV[0])
-
   files = Tahweel::CLI::FileCollector.collect(input_path, extensions: options[:extensions])
 
-  Async do
-    barrier = Async::Barrier.new
-    semaphore = Async::Semaphore.new(options[:file_concurrency], parent: barrier)
-
-    files.each do |file|
-      semaphore.async { Tahweel::CLI::FileProcessor.process(file, options.merge(base_input_path: input_path)) }
-    end
-
-    barrier.wait
+  if files.empty?
+    puts "No files found to process."
+    exit 0
   end
+
+  queue = Queue.new
+  files.each { queue << _1 }
+
+  concurrency = options[:file_concurrency]
+
+  if concurrency == 1 && files.size > 1 && !ARGV.include?("-F") && !ARGV.include?("--file-concurrency")
+    concurrency = Etc.nprocessors - 2
+  end
+
+  workers = Array.new(concurrency) do
+    Thread.new do
+      until queue.empty?
+        begin
+          file = queue.pop(true)
+        rescue ThreadError
+          break
+        end
+
+        begin
+          Tahweel::CLI::FileProcessor.process(file, options.merge(base_input_path: input_path))
+        rescue StandardError => e
+          warn "Error processing #{file}: #{e.message}"
+        end
+      end
+    end
+  end
+
+  workers.each(&:join)
 rescue StandardError => e
   abort "Error: #{e.message}"
 end

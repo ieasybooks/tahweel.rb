@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "async"
 require "spec_helper"
 require "tahweel/converter"
 
@@ -45,9 +44,14 @@ RSpec.describe Tahweel::Converter do
   end
 
   describe "#convert" do
+    it "processes images concurrently using threads" do
+      allow(Thread).to receive(:new).and_call_original
+      converter.convert
+      expect(Thread).to have_received(:new).exactly(Tahweel::Converter::DEFAULT_CONCURRENCY).times
+    end
+
     it "orchestrates the conversion process successfully" do # rubocop:disable RSpec/ExampleLength,RSpec/MultipleExpectations
-      result = nil
-      Async { result = converter.convert }
+      result = converter.convert
 
       expect(Tahweel::PdfSplitter).to have_received(:split).with(pdf_path, dpi: 150)
       expect(ocr_engine).to have_received(:extract).with(image_paths[0])
@@ -58,12 +62,28 @@ RSpec.describe Tahweel::Converter do
 
     context "when processing fails" do
       before do
-        allow(converter).to receive(:process_images_concurrently).and_raise(RuntimeError, "OCR Error") # rubocop:disable RSpec/SubjectStub
+        allow(converter).to receive(:process_images).and_raise(RuntimeError, "OCR Error") # rubocop:disable RSpec/SubjectStub
       end
 
       it "ensures the temporary directory is cleaned up" do # rubocop:disable RSpec/MultipleExpectations
         expect { converter.convert }.to raise_error(RuntimeError, "OCR Error")
         expect(FileUtils).to have_received(:rm_rf).with(temp_dir)
+      end
+    end
+
+    context "when a race condition occurs in the queue" do # rubocop:disable RSpec/MultipleMemoizedHelpers
+      let(:queue) { instance_double(Queue) }
+
+      before do
+        allow(Queue).to receive(:new).and_return(queue)
+        allow(queue).to receive(:<<)
+        # Force entry into loop then raise error
+        allow(queue).to receive(:empty?).and_return(false)
+        allow(queue).to receive(:pop).with(true).and_raise(ThreadError)
+      end
+
+      it "handles ThreadError gracefully and terminates the worker" do
+        expect { converter.convert }.not_to raise_error
       end
     end
 
@@ -76,17 +96,10 @@ RSpec.describe Tahweel::Converter do
       end
 
       it "passes custom options to dependencies" do # rubocop:disable RSpec/MultipleExpectations
-        Async { converter.convert }
+        converter.convert
 
         expect(Tahweel::PdfSplitter).to have_received(:split).with(pdf_path, dpi: 300)
         expect(Tahweel::Ocr).to have_received(:new).with(processor: :custom)
-      end
-
-      it "uses the custom concurrency limit" do
-        # We need to spy on Async::Semaphore to verify the limit
-        allow(Async::Semaphore).to receive(:new).and_call_original
-        Async { converter.convert }
-        expect(Async::Semaphore).to have_received(:new).with(5, parent: anything)
       end
     end
   end
