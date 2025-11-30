@@ -70,7 +70,7 @@ RSpec.describe Tahweel::Processors::GoogleDrive do
 
         # Verify Upload
         expect(mock_service).to have_received(:create_file).with(
-          { name: "test.jpg", mime_type: "application/vnd.google-apps.document" },
+          { name: an_instance_of(String), mime_type: "application/vnd.google-apps.document" },
           upload_source: file_path,
           fields: "id"
         )

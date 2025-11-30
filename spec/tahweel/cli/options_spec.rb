@@ -18,11 +18,12 @@ RSpec.describe Tahweel::CLI::Options do
     end
 
     context "when valid arguments are provided" do
-      let(:args) { ["file.pdf", "--dpi", "300", "--concurrency", "5"] }
+      let(:args) { ["file.pdf", "--dpi", "300", "--page-concurrency", "5", "--file-concurrency", "2"] }
 
       it "parses options correctly" do # rubocop:disable RSpec/MultipleExpectations
         expect(parsed_options[:dpi]).to eq(300)
-        expect(parsed_options[:concurrency]).to eq(5)
+        expect(parsed_options[:page_concurrency]).to eq(5)
+        expect(parsed_options[:file_concurrency]).to eq(2)
       end
 
       it "retains default values for unspecified options" do # rubocop:disable RSpec/MultipleExpectations
@@ -107,6 +108,34 @@ RSpec.describe Tahweel::CLI::Options do
 
       it "parses and unescapes the separator" do
         expect(parsed_options[:page_separator]).to eq("\n---new-page---\n")
+      end
+    end
+
+    context "when file concurrency is not provided" do
+      let(:args) { ["file.pdf"] }
+
+      it "uses the default file_concurrency value" do
+        expect(parsed_options[:file_concurrency]).to eq(1)
+      end
+    end
+
+    context "when invalid page concurrency is provided" do
+      let(:args) { ["file.pdf", "--page-concurrency", "0"] }
+
+      it "aborts with an error message" do
+        expect do
+          described_class.parse(args)
+        end.to raise_error(SystemExit).and output(/Error: page-concurrency must be a positive integer/).to_stderr
+      end
+    end
+
+    context "when invalid file concurrency is provided" do
+      let(:args) { ["file.pdf", "--file-concurrency", "0"] }
+
+      it "aborts with an error message" do
+        expect do
+          described_class.parse(args)
+        end.to raise_error(SystemExit).and output(/Error: file-concurrency must be a positive integer/).to_stderr
       end
     end
   end

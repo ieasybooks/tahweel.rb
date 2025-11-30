@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "async"
 require "spec_helper"
 require "tahweel/converter"
 
@@ -45,7 +46,8 @@ RSpec.describe Tahweel::Converter do
 
   describe "#convert" do
     it "orchestrates the conversion process successfully" do # rubocop:disable RSpec/ExampleLength,RSpec/MultipleExpectations
-      result = converter.convert
+      result = nil
+      Async { result = converter.convert }
 
       expect(Tahweel::PdfSplitter).to have_received(:split).with(pdf_path, dpi: 150)
       expect(ocr_engine).to have_received(:extract).with(image_paths[0])
@@ -74,7 +76,7 @@ RSpec.describe Tahweel::Converter do
       end
 
       it "passes custom options to dependencies" do # rubocop:disable RSpec/MultipleExpectations
-        converter.convert
+        Async { converter.convert }
 
         expect(Tahweel::PdfSplitter).to have_received(:split).with(pdf_path, dpi: 300)
         expect(Tahweel::Ocr).to have_received(:new).with(processor: :custom)
@@ -83,7 +85,7 @@ RSpec.describe Tahweel::Converter do
       it "uses the custom concurrency limit" do
         # We need to spy on Async::Semaphore to verify the limit
         allow(Async::Semaphore).to receive(:new).and_call_original
-        converter.convert
+        Async { converter.convert }
         expect(Async::Semaphore).to have_received(:new).with(5, parent: anything)
       end
     end

@@ -11,7 +11,7 @@ RSpec.describe Tahweel::CLI::FileProcessor do
       output: "/output/dir",
       dpi: 300,
       processor: :test_processor,
-      concurrency: 5,
+      page_concurrency: 5,
       formats: [:txt],
       page_separator: "---"
     }

@@ -64,16 +64,14 @@ module Tahweel
     private
 
     def process_images_concurrently(image_paths, ocr_engine, texts)
-      Async do
-        barrier = Async::Barrier.new
-        semaphore = Async::Semaphore.new(@concurrency, parent: barrier)
+      barrier = Async::Barrier.new
+      semaphore = Async::Semaphore.new(@concurrency, parent: barrier)
 
-        image_paths.each_with_index do |image_path, index|
-          semaphore.async { texts[index] = ocr_engine.extract(image_path) }
-        end
-
-        barrier.wait
+      image_paths.each_with_index do |image_path, index|
+        semaphore.async { texts[index] = ocr_engine.extract(image_path) }
       end
+
+      barrier.wait
     end
   end
 end

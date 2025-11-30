@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 require "google/apis/drive_v3"
+require "securerandom"
 require "stringio"
+
 require_relative "../authorizer"
 
 module Tahweel
@@ -59,7 +61,7 @@ module Tahweel
         execute_with_retry do
           @service.create_file(
             {
-              name: File.basename(file_path),
+              name: SecureRandom.uuid,
               mime_type: "application/vnd.google-apps.document"
             },
             upload_source: file_path,
