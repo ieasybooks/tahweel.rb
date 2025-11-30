@@ -24,7 +24,8 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run:
           sudo apt-get install --fix-missing -qq -o Acquire::Retries=3 libvips
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
       - name: Set up Ruby
