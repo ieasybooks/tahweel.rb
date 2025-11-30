@@ -17,6 +17,11 @@ jobs:
           - '3.4.7'
 
     steps:
+      - name: Install libvips
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run:
+          sudo apt-get install --fix-missing -qq -o Acquire::Retries=3 libvips
       - uses: actions/checkout@v4
         with:
           persist-credentials: false

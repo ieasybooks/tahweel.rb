@@ -98,7 +98,7 @@ module Tahweel
 
         begin
           yield
-        rescue Google::Apis::RateLimitError, Google::Apis::TransmissionError, Google::Apis::ServerError => e
+        rescue Google::Apis::RateLimitError, Google::Apis::TransmissionError, Google::Apis::ServerError
           # Exponential backoff with a cap of 60 seconds + jitter
           wait_time = [2**retries, 60].min + rand
           sleep wait_time
