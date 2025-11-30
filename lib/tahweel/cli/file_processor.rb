@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "pathname"
+
 module Tahweel
   module CLI
     # Processes a single file by orchestrating conversion/extraction and writing the output.
@@ -18,6 +20,7 @@ module Tahweel
       # @option options [Integer] :concurrency Max concurrent operations.
       # @option options [Array<Symbol>] :formats Output formats (e.g., [:txt, :docx]).
       # @option options [String] :page_separator Separator string for TXT output.
+      # @option options [String] :base_input_path The base path used to determine relative output structure.
       # @return [void]
       def self.process(file_path, options) = new(file_path, options).process
 
@@ -83,7 +86,26 @@ module Tahweel
       end
 
       def base_output_path = File.join(output_directory, File.basename(@file_path, ".*"))
-      def output_directory = @options[:output] || Dir.pwd
+
+      # Determines the output directory.
+      #
+      # If an output option is provided, it attempts to preserve the directory structure
+      # relative to the `base_input_path`. If `base_input_path` is not provided or
+      # calculation fails, it falls back to the provided output directory.
+      #
+      # If no output option is provided, it defaults to the file's own directory.
+      #
+      # @return [String] The target output directory.
+      def output_directory
+        return File.dirname(@file_path) unless @options[:output]
+
+        if @options[:base_input_path]
+          relative_dir = Pathname.new(File.dirname(@file_path)).relative_path_from(@options[:base_input_path])
+          return File.join(@options[:output], relative_dir) unless relative_dir.to_s == "."
+        end
+
+        @options[:output]
+      end
     end
   end
 end

@@ -10,8 +10,10 @@ require "tahweel"
 begin
   options = Tahweel::CLI::Options.parse(ARGV)
 
-  Tahweel::CLI::FileCollector.collect(ARGV[0], extensions: options[:extensions]).each do |file|
-    Tahweel::CLI::FileProcessor.process(file, options)
+  input_path = File.expand_path(ARGV[0])
+
+  Tahweel::CLI::FileCollector.collect(input_path, extensions: options[:extensions]).each do |file|
+    Tahweel::CLI::FileProcessor.process(file, options.merge(base_input_path: input_path))
   end
 rescue StandardError => e
   abort "Error: #{e.message}"

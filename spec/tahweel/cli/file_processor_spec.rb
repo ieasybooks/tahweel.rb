@@ -64,6 +64,61 @@ RSpec.describe Tahweel::CLI::FileProcessor do
       end
     end
 
+    context "when preserving directory structure" do
+      let(:file_path) { "/data/input/subdir/test.pdf" }
+      let(:options) do
+        {
+          output: "/output/dir",
+          base_input_path: "/data/input",
+          formats: [:txt]
+        }
+      end
+
+      before do
+        allow(Tahweel).to receive(:convert).and_return(["Text"])
+      end
+
+      it "mirrors the input directory structure in the output directory" do # rubocop:disable RSpec/MultipleExpectations
+        processor.process
+
+        expected_output_dir = "/output/dir/subdir"
+        expect(FileUtils).to have_received(:mkdir_p).with(expected_output_dir)
+        expect(Tahweel::Writer).to have_received(:write).with(
+          ["Text"],
+          File.join(expected_output_dir, "test"),
+          formats: [:txt],
+          page_separator: nil
+        )
+      end
+    end
+
+    context "when preserving directory structure with file at root" do
+      let(:file_path) { "/data/input/test.pdf" }
+      let(:options) do
+        {
+          output: "/output/dir",
+          base_input_path: "/data/input",
+          formats: [:txt]
+        }
+      end
+
+      before do
+        allow(Tahweel).to receive(:convert).and_return(["Text"])
+      end
+
+      it "outputs directly to the output directory without subdirectory" do # rubocop:disable RSpec/MultipleExpectations
+        processor.process
+
+        expect(FileUtils).to have_received(:mkdir_p).with("/output/dir")
+        expect(Tahweel::Writer).to have_received(:write).with(
+          ["Text"],
+          "/output/dir/test",
+          formats: [:txt],
+          page_separator: nil
+        )
+      end
+    end
+
     context "when input is an image" do
       let(:file_path) { "input.jpg" }
 
@@ -86,21 +141,20 @@ RSpec.describe Tahweel::CLI::FileProcessor do
     end
 
     context "when output directory is not specified" do
-      let(:file_path) { "input.pdf" }
+      let(:file_path) { "path/to/input.pdf" }
       let(:options) { { formats: [:txt] } }
 
       before do
         allow(Tahweel).to receive(:convert).and_return(["Text"])
-        allow(Dir).to receive(:pwd).and_return("/current/dir")
       end
 
-      it "defaults to current directory" do # rubocop:disable RSpec/MultipleExpectations
+      it "defaults to the file's directory" do # rubocop:disable RSpec/MultipleExpectations
         processor.process
 
-        expect(FileUtils).to have_received(:mkdir_p).with("/current/dir")
+        expect(FileUtils).to have_received(:mkdir_p).with("path/to")
         expect(Tahweel::Writer).to have_received(:write).with(
           ["Text"],
-          "/current/dir/input",
+          "path/to/input",
           formats: [:txt],
           page_separator: nil
         )
