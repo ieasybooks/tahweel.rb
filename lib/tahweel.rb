@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "async/http/faraday/default"
+
 require_relative "tahweel/version"
 require_relative "tahweel/authorizer"
 require_relative "tahweel/pdf_splitter"
