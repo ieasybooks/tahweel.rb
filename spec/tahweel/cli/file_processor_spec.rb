@@ -18,8 +18,10 @@ RSpec.describe Tahweel::CLI::FileProcessor do
   end
 
   before do
+    allow(File).to receive(:exist?).and_return(false)
     allow(FileUtils).to receive(:mkdir_p)
     allow(Tahweel::Writer).to receive(:write)
+    allow(Tahweel::Writer).to receive(:new).and_call_original
   end
 
   describe ".process" do
@@ -102,6 +104,45 @@ RSpec.describe Tahweel::CLI::FileProcessor do
           formats: [:txt],
           page_separator: nil
         )
+      end
+    end
+
+    context "when all output files already exist" do
+      let(:file_path) { "input.pdf" }
+      let(:options) { { formats: %i[txt docx], output: "/output/dir" } }
+
+      before do
+        # Mock File.exist? to return true for the expected output paths
+        allow(File).to receive(:exist?).with("/output/dir/input.txt").and_return(true)
+        allow(File).to receive(:exist?).with("/output/dir/input.docx").and_return(true)
+        allow(Tahweel).to receive(:convert)
+        allow(Tahweel).to receive(:extract)
+      end
+
+      it "skips processing" do # rubocop:disable RSpec/MultipleExpectations
+        processor.process
+
+        expect(Tahweel).not_to have_received(:convert)
+        expect(Tahweel).not_to have_received(:extract)
+        expect(Tahweel::Writer).not_to have_received(:write)
+      end
+    end
+
+    context "when some output files are missing" do
+      let(:file_path) { "input.pdf" }
+      let(:options) { { formats: %i[txt docx], output: "/output/dir" } }
+
+      before do
+        allow(File).to receive(:exist?).with("/output/dir/input.txt").and_return(true)
+        allow(File).to receive(:exist?).with("/output/dir/input.docx").and_return(false)
+        allow(Tahweel).to receive(:convert).and_return(["Text"])
+      end
+
+      it "proceeds with processing" do # rubocop:disable RSpec/MultipleExpectations
+        processor.process
+
+        expect(Tahweel).to have_received(:convert)
+        expect(Tahweel::Writer).to have_received(:write)
       end
     end
   end

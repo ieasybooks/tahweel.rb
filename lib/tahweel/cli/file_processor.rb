@@ -33,13 +33,16 @@ module Tahweel
       # Executes the processing logic.
       #
       # 1. Ensures the output directory exists.
-      # 2. Detects if the input is a PDF or an image.
-      # 3. Runs the appropriate conversion/extraction pipeline.
-      # 4. Writes the results to the configured formats.
+      # 2. Checks if output files already exist to avoid redundant processing.
+      # 3. Detects if the input is a PDF or an image.
+      # 4. Runs the appropriate conversion/extraction pipeline.
+      # 5. Writes the results to the configured formats.
       #
       # @return [void]
       def process
         ensure_output_directory_exists
+
+        return if all_outputs_exist?
 
         pdf? ? process_pdf : process_image
       end
@@ -47,6 +50,14 @@ module Tahweel
       private
 
       def ensure_output_directory_exists = FileUtils.mkdir_p(output_directory)
+
+      def all_outputs_exist?
+        @options[:formats].all? do |format|
+          extension = Tahweel::Writer.new(format: format).extension
+          File.exist?("#{base_output_path}.#{extension}")
+        end
+      end
+
       def pdf? = File.extname(@file_path).downcase == ".pdf"
 
       def process_pdf

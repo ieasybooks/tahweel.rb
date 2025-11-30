@@ -39,6 +39,11 @@ module Tahweel
     # @param texts [Array<String>] The extracted texts.
     # @param base_path [String] The base output file path.
     # @param options [Hash] Options to pass to the writer.
-    def write(texts, base_path, **options) = @writer.write(texts, "#{base_path}.#{@writer.extension}", options)
+    def write(texts, base_path, **options) = @writer.write(texts, "#{base_path}.#{extension}", options)
+
+    # Delegates the extension retrieval to the specific writer strategy.
+    #
+    # @return [String] The file extension.
+    def extension = @writer.extension
   end
 end
