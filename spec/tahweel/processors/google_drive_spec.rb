@@ -22,6 +22,7 @@ RSpec.describe Tahweel::Processors::GoogleDrive do
 
     # Mock file system checks
     allow(File).to receive(:exist?).with(file_path).and_return(true)
+    allow(File).to receive(:basename).and_call_original
     allow(File).to receive(:basename).with(file_path).and_return("test.jpg")
   end
 
