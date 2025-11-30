@@ -1,23 +1,192 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <title>Tahweel Authorization</title>
-  <style>
-    body { font-family: sans-serif; text-align: center; padding-top: 50px; background-color: #f4f4f4; }
-    .container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: inline-block; }
-    h1 { color: #2c3e50; }
-    p { color: #7f8c8d; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Authorization Successful!</h1>
-    <p>You have successfully logged in to Tahweel.</p>
-    <p>You can close this window and return to your terminal.</p>
-  </div>
-  <script>
-    // Optional: Attempt to close the window automatically
-    setTimeout(function() { window.close(); }, 2000);
-  </script>
-</body>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tahweel Authorization</title>
+    <!-- Google Fonts: Poppins for English, Cairo for Arabic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --primary-color: #10b981; /* Emerald Green */
+        --primary-hover: #059669;
+        --bg-gradient: linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%);
+        --text-dark: #1f2937;
+        --text-light: #6b7280;
+        --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-gradient);
+        font-family: 'Cairo', sans-serif; /* Default to Arabic font */
+        transition: all 0.3s ease;
+      }
+
+      /* English Font Override */
+      body.font-en {
+        font-family: 'Poppins', sans-serif;
+      }
+
+      .container {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 3rem;
+        border-radius: 24px;
+        box-shadow: var(--card-shadow);
+        text-align: center;
+        max-width: 420px;
+        width: 90%;
+        position: relative;
+        backdrop-filter: blur(10px);
+        animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        border: 1px solid rgba(255,255,255,0.5);
+      }
+
+      /* Success Icon Animation */
+      .icon-wrapper {
+        width: 80px;
+        height: 80px;
+        background: #d1fae5;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem auto;
+        color: var(--primary-color);
+      }
+
+      .icon-wrapper svg {
+        width: 40px;
+        height: 40px;
+        stroke-width: 3;
+        stroke: currentColor;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        animation: drawCheck 0.8s ease-out forwards;
+      }
+
+      h1 {
+        color: var(--text-dark);
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem 0;
+      }
+
+      p {
+        color: var(--text-light);
+        font-size: 1rem;
+        line-height: 1.6;
+        margin: 0 0 1.5rem 0;
+      }
+
+      .sub-text {
+        font-size: 0.875rem;
+        opacity: 0.8;
+        margin-top: -1rem;
+      }
+
+      /* Language Toggle Button */
+      .lang-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-family: inherit;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        cursor: pointer;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      html[dir="ltr"] .lang-btn {
+        right: auto;
+        left: 20px;
+      }
+
+      .lang-btn:hover {
+        background: #f9fafb;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      }
+
+      /* Animations */
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes drawCheck {
+        0% { stroke-dasharray: 100; stroke-dashoffset: 100; opacity: 0; transform: scale(0.8); }
+        100% { stroke-dasharray: 100; stroke-dashoffset: 0; opacity: 1; transform: scale(1); }
+      }
+    </style>
+  </head>
+  <body>
+    <button class="lang-btn" onclick="toggleLanguage()" id="langBtn">
+    <span>🌐</span> <span id="btnText">English</span>
+    </button>
+    <div class="container">
+      <div class="icon-wrapper">
+        <!-- Simple SVG Checkmark -->
+        <svg viewBox="0 0 24 24">
+          <path d="M20 6L9 17l-5-5"></path>
+        </svg>
+      </div>
+      <h1 id="title">تمت المُصادقة بنجاح!</h1>
+      <p id="msg1">لقد قمت بتسجيل الدخول بنجاح إلى تحويل.</p>
+      <p id="msg2" class="sub-text">يمكنك إغلاق هذه النافذة والعودة إلى البرنامج.</p>
+    </div>
+    <script>
+      // Content Dictionary
+      const content = {
+        ar: {
+          btn: "English",
+          title: "تمت المُصادقة بنجاح!",
+          msg1: "لقد قمت بتسجيل الدخول بنجاح إلى تحويل.",
+          msg2: "يمكنك إغلاق هذه النافذة والعودة إلى البرنامج."
+        },
+        en: {
+          btn: "العربية",
+          title: "Authorization Successful!",
+          msg1: "You have successfully logged in to Tahweel.",
+          msg2: "You can close this window and return to your terminal."
+        }
+      };
+      
+      let currentLang = 'ar';
+      
+      function toggleLanguage() {
+        currentLang = currentLang === 'ar' ? 'en' : 'ar';
+        
+        // Toggle Direction and Lang Attribute
+        const htmlEl = document.documentElement;
+        htmlEl.lang = currentLang;
+        htmlEl.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+      
+        // Toggle Font Class (for body typography)
+        document.body.classList.toggle('font-en', currentLang === 'en');
+      
+        // Update Text
+        document.getElementById('btnText').textContent = content[currentLang].btn;
+        document.getElementById('title').textContent = content[currentLang].title;
+        document.getElementById('msg1').textContent = content[currentLang].msg1;
+        document.getElementById('msg2').textContent = content[currentLang].msg2;
+      }
+    </script>
+  </body>
 </html>
