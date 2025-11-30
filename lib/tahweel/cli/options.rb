@@ -56,7 +56,7 @@ module Tahweel
           options[:extensions] = value
         end
 
-        opts.on("--dpi DPI", POSITIVE_INTEGER, "DPI for PDF to Image conversion (default: 150)") do |value|
+        opts.on("--dpi DPI", POSITIVE_INTEGER, "DPI for PDF to Image conversion (default: #{options[:dpi]})") do |value|
           options[:dpi] = value
         end
 
@@ -67,13 +67,16 @@ module Tahweel
           options[:processor] = value
         end
 
-        opts.on("-P", "--page-concurrency PAGE_CONCURRENCY", POSITIVE_INTEGER, "Max concurrent OCR operations (default: 12)") do |value|
+        opts.on(
+          "-P", "--page-concurrency PAGE_CONCURRENCY", POSITIVE_INTEGER,
+          "Max concurrent OCR operations (default: #{options[:page_concurrency]})"
+        ) do |value|
           options[:page_concurrency] = value
         end
 
         opts.on(
           "-F", "--file-concurrency FILE_CONCURRENCY", POSITIVE_INTEGER,
-          "Max number of files to process in parallel (default: 1)"
+          "Max number of files to process in parallel (default: #{options[:file_concurrency]})"
         ) do |value|
           options[:file_concurrency] = value
         end
@@ -90,7 +93,7 @@ module Tahweel
 
         opts.on(
           "--page-separator SEPARATOR", String,
-          "Separator between pages in TXT output (default: #{Tahweel::Writers::Txt::PAGE_SEPARATOR.gsub("\n", "\\n")})"
+          "Separator between pages in TXT output (default: #{options[:page_separator].gsub("\n", "\\n")})"
         ) do |value|
           options[:page_separator] = value.gsub("\\n", "\n")
         end
