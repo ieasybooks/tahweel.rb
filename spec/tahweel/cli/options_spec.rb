@@ -71,7 +71,7 @@ RSpec.describe Tahweel::CLI::Options do
       it "aborts with an error message" do
         expect do
           described_class.parse(args)
-        end.to raise_error(SystemExit).and output(/Error: Invalid format\(s\): invalid_format/).to_stderr
+        end.to raise_error(SystemExit).and output(/Error: invalid format\(s\): invalid_format/).to_stderr
       end
     end
 
@@ -125,7 +125,7 @@ RSpec.describe Tahweel::CLI::Options do
       it "aborts with an error message" do
         expect do
           described_class.parse(args)
-        end.to raise_error(SystemExit).and output(/Error: page-concurrency must be a positive integer/).to_stderr
+        end.to raise_error(SystemExit).and output(/Error: invalid argument: --page-concurrency must be a positive integer/).to_stderr # rubocop:disable Layout/LineLength
       end
     end
 
@@ -135,7 +135,7 @@ RSpec.describe Tahweel::CLI::Options do
       it "aborts with an error message" do
         expect do
           described_class.parse(args)
-        end.to raise_error(SystemExit).and output(/Error: file-concurrency must be a positive integer/).to_stderr
+        end.to raise_error(SystemExit).and output(/Error: invalid argument: --file-concurrency must be a positive integer/).to_stderr # rubocop:disable Layout/LineLength
       end
     end
   end
