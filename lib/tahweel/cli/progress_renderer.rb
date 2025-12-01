@@ -105,7 +105,7 @@ module Tahweel
       def start_ticker
         @ticker_thread = Thread.new do
           while @running
-            sleep 0.5
+            sleep 0.1
             @mutex.synchronize { render } if @running
           end
         end
