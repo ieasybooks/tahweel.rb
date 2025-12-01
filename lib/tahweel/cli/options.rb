@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "etc"
 require "optparse"
 
 module Tahweel
@@ -30,7 +31,7 @@ module Tahweel
           dpi: 150,
           processor: :google_drive,
           page_concurrency: Tahweel::Converter::DEFAULT_CONCURRENCY,
-          file_concurrency: 1,
+          file_concurrency: (Etc.nprocessors - 2).clamp(2..),
           output: nil,
           formats: [:txt],
           page_separator: Tahweel::Writers::Txt::PAGE_SEPARATOR
@@ -76,7 +77,7 @@ module Tahweel
 
         opts.on(
           "-F", "--file-concurrency FILE_CONCURRENCY", POSITIVE_INTEGER,
-          "Max number of files to process in parallel (default: #{options[:file_concurrency]})"
+          "Max concurrent files to process (default: CPUs - 2 = #{options[:file_concurrency]})"
         ) do |value|
           options[:file_concurrency] = value
         end

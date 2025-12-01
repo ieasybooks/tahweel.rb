@@ -6,7 +6,6 @@
 $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
 
 require "tahweel"
-require "etc"
 
 begin
   options = Tahweel::CLI::Options.parse(ARGV)
@@ -21,13 +20,7 @@ begin
   queue = Queue.new
   files.each { queue << _1 }
 
-  concurrency = options[:file_concurrency]
-
-  if concurrency == 1 && files.size > 1 && !ARGV.include?("-F") && !ARGV.include?("--file-concurrency")
-    concurrency = Etc.nprocessors - 2
-  end
-
-  workers = Array.new(concurrency) do
+  workers = Array.new(options[:file_concurrency]) do
     Thread.new do
       until queue.empty?
         begin
