@@ -102,5 +102,29 @@ RSpec.describe Tahweel::Converter do
         expect(Tahweel::Ocr).to have_received(:new).with(processor: :custom)
       end
     end
+
+    context "when a block is provided for progress reporting" do
+      it "yields progress for each processed page" do # rubocop:disable RSpec/MultipleExpectations
+        expect { |b| converter.convert(&b) }.to yield_control.exactly(2).times
+
+        # Since we can't guarantee order of thread execution, we check that both progress updates are received
+        expect { |b| converter.convert(&b) }.to yield_successive_args(
+          {
+            file_path: pdf_path,
+            stage: :ocr,
+            current_page: 1,
+            percentage: 50.0,
+            remaining_pages: 1
+          },
+          {
+            file_path: pdf_path,
+            stage: :ocr,
+            current_page: 2,
+            percentage: 100.0,
+            remaining_pages: 0
+          }
+        )
+      end
+    end
   end
 end

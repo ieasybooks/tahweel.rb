@@ -29,7 +29,7 @@ RSpec.describe Tahweel::CLI::Options do
 
       it "retains default values for unspecified options" do # rubocop:disable RSpec/MultipleExpectations
         expect(parsed_options[:processor]).to eq(:google_drive)
-        expect(parsed_options[:formats]).to eq([:txt])
+        expect(parsed_options[:formats]).to eq(%i[txt docx])
       end
     end
 

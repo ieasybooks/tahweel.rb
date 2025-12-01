@@ -71,6 +71,29 @@ RSpec.describe Tahweel::PdfSplitter do
       end
     end
 
+    context "when a block is given for progress" do
+      it "yields progress updates" do # rubocop:disable RSpec/MultipleExpectations
+        expect { |b| splitter.split(&b) }.to yield_control.exactly(2).times
+
+        expect { |b| splitter.split(&b) }.to yield_successive_args(
+          {
+            file_path: pdf_path,
+            stage: :splitting,
+            current_page: 1,
+            percentage: 50.0,
+            remaining_pages: 1
+          },
+          {
+            file_path: pdf_path,
+            stage: :splitting,
+            current_page: 2,
+            percentage: 100.0,
+            remaining_pages: 0
+          }
+        )
+      end
+    end
+
     context "when running on Windows" do
       before do
         stub_const("RbConfig::CONFIG", { "host_os" => "mswin" })

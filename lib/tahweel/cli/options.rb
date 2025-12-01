@@ -33,7 +33,7 @@ module Tahweel
           page_concurrency: Tahweel::Converter::DEFAULT_CONCURRENCY,
           file_concurrency: (Etc.nprocessors - 2).clamp(2..),
           output: nil,
-          formats: [:txt],
+          formats: %i[txt docx],
           page_separator: Tahweel::Writers::Txt::PAGE_SEPARATOR
         }
       end

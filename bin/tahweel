@@ -6,6 +6,7 @@
 $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
 
 require "tahweel"
+require "tahweel/cli/progress_renderer"
 
 begin
   options = Tahweel::CLI::Options.parse(ARGV)
@@ -22,7 +23,9 @@ begin
   queue = Queue.new
   files.each { queue << _1 }
 
-  workers = Array.new(options[:file_concurrency]) do
+  renderer = Tahweel::CLI::ProgressRenderer.new(files.size, options[:file_concurrency])
+
+  Array.new(options[:file_concurrency]) do |i|
     Thread.new do
       until queue.empty?
         begin
@@ -32,15 +35,22 @@ begin
         end
 
         begin
-          Tahweel::CLI::FileProcessor.process(file, options.merge(base_input_path: base_path))
-        rescue StandardError => e
-          warn "Error processing #{file}: #{e.message}"
+          renderer.start_file(i, file)
+
+          Tahweel::CLI::FileProcessor.process(file, options.merge(base_input_path: base_path)) do |progress|
+            renderer.update(i, progress)
+          end
+
+          renderer.finish_file(i)
+        rescue StandardError
+          renderer.finish_file(i)
         end
       end
     end
-  end
+  end.each(&:join)
 
-  workers.each(&:join)
+  renderer.finish_all
 rescue StandardError => e
+  print "\e[?25h"
   abort "Error: #{e.message}"
 end

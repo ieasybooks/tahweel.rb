@@ -18,8 +18,15 @@ module Tahweel
     #
     # @param pdf_path [String] The local file path to the PDF document.
     # @param dpi [Integer] The resolution (Dots Per Inch) for rendering the PDF pages. Defaults to 150.
+    # @param &block [Proc] A block that will be yielded with progress info.
+    # @yield [Hash] Progress info: {
+    #   stage: :splitting,
+    #   current_page: Integer,
+    #   percentage: Float,
+    #   remaining_pages: Integer
+    # }
     # @return [Hash] A hash containing the :folder_path (String) and :image_paths (Array<String>).
-    def self.split(pdf_path, dpi: DEFAULT_DPI) = new(pdf_path, dpi:).split
+    def self.split(pdf_path, dpi: DEFAULT_DPI, &) = new(pdf_path, dpi:).split(&)
 
     # Initializes a new PdfSplitter instance.
     #
@@ -39,16 +46,23 @@ module Tahweel
     # 3. Creates a unique temporary directory for output.
     # 4. Iterates through each page of the PDF and converts it to a PNG image.
     #
+    # @param &block [Proc] A block that will be yielded with progress info.
+    # @yield [Hash] Progress info: {
+    #   stage: :splitting,
+    #   current_page: Integer,
+    #   percentage: Float,
+    #   remaining_pages: Integer
+    # }
     # @return [Hash] Result hash with keys:
     #   - :folder_path [String] The absolute path to the temporary directory containing the images.
     #   - :image_paths [Array<String>] List of absolute paths for each generated image file.
     # @raise [RuntimeError] If the PDF file is not found or libvips is missing.
     # @raise [Vips::Error] If the underlying VIPS library encounters an error during processing.
-    def split
+    def split(&)
       check_libvips_installed!
       validate_file_exists!
       setup_output_directory
-      process_pages
+      process_pages(&)
       result
     end
 
@@ -82,7 +96,29 @@ module Tahweel
     end
 
     # Iterates through all pages and extracts them.
-    def process_pages = total_pages.times { extract_page(_1) }
+    #
+    # @param &block [Proc] A block that will be yielded with progress info.
+    # @yield [Hash] Progress info: {
+    #   stage: :splitting,
+    #   current_page: Integer,
+    #   percentage: Float,
+    #   remaining_pages: Integer
+    # }
+    # @return [void]
+    def process_pages(&)
+      total_pages.times do |i|
+        extract_page(i)
+
+        next unless block_given?
+
+        yield({
+          file_path: @pdf_path, stage: :splitting,
+          current_page: i + 1,
+          percentage: (((i + 1).to_f / total_pages) * 100).round(2),
+          remaining_pages: total_pages - (i + 1)
+        })
+      end
+    end
 
     # Calculates the total number of pages in the PDF by loading the first page metadata.
     # @return [Integer] The page count.

@@ -20,12 +20,21 @@ module Tahweel
     # @param dpi [Integer] DPI for PDF to image conversion (default: 150).
     # @param processor [Symbol] OCR processor to use (default: :google_drive).
     # @param concurrency [Integer] Max concurrent OCR operations (default: 12).
+    # @param &block [Proc] A block that will be yielded with progress info.
+    # @yield [Hash] Progress info: {
+    #   stage: :splitting or :ocr,
+    #   current_page: Integer,
+    #   percentage: Float,
+    #   remaining_pages: Integer
+    # }
     # @return [Array<String>] An array containing the text of each page.
     def self.convert(
-      pdf_path, dpi: PdfSplitter::DEFAULT_DPI,
+      pdf_path,
+      dpi: PdfSplitter::DEFAULT_DPI,
       processor: :google_drive,
-      concurrency: DEFAULT_CONCURRENCY
-    ) = new(pdf_path, dpi:, processor:, concurrency:).convert
+      concurrency: DEFAULT_CONCURRENCY,
+      &
+    ) = new(pdf_path, dpi:, processor:, concurrency:).convert(&)
 
     # Initializes the Converter.
     #
@@ -42,13 +51,19 @@ module Tahweel
 
     # Executes the conversion process.
     #
+    # @param &block [Proc] A block that will be yielded with progress info.
+    # @yield [Hash] Progress info: {
+    #   stage: :splitting or :ocr,
+    #   current_page: Integer,
+    #   percentage: Float,
+    #   remaining_pages: Integer
+    # }
     # @return [Array<String>] An array containing the text of each page.
-    def convert
-      image_paths, temp_dir = PdfSplitter.split(@pdf_path, dpi: @dpi).values_at(:image_paths, :folder_path)
-      ocr_engine = Ocr.new(processor: @processor_type)
+    def convert(&)
+      image_paths, temp_dir = PdfSplitter.split(@pdf_path, dpi: @dpi, &).values_at(:image_paths, :folder_path)
 
       begin
-        process_images(image_paths, ocr_engine)
+        process_images(image_paths, Ocr.new(processor: @processor_type), &)
       ensure
         FileUtils.rm_rf(temp_dir)
       end
@@ -56,28 +71,61 @@ module Tahweel
 
     private
 
-    def process_images(image_paths, ocr_engine)
+    def process_images(image_paths, ocr_engine, &)
       texts = Array.new(image_paths.size)
+      mutex = Mutex.new
+      processed_count = 0
 
-      queue = Queue.new
-      image_paths.each_with_index { |path, index| queue << [path, index] }
-
-      workers = Array.new(@concurrency) { Thread.new { process_queue(queue, ocr_engine, texts) } }
-      workers.each(&:join)
+      run_workers(build_queue(image_paths), ocr_engine, texts, mutex) do
+        processed_count += 1
+        report_progress(processed_count, image_paths.size, &)
+      end
 
       texts
     end
 
-    def process_queue(queue, ocr_engine, texts)
-      until queue.empty?
+    def build_queue(image_paths)
+      queue = Queue.new
+      image_paths.each_with_index { |path, index| queue << [path, index] }
+      queue
+    end
+
+    def run_workers(queue, ocr_engine, texts, mutex, &)
+      Array.new(@concurrency) do
+        Thread.new { process_queue_items(queue, ocr_engine, texts, mutex, &) }
+      end.each(&:join)
+    end
+
+    def process_queue_items(queue, ocr_engine, texts, mutex, &)
+      loop do
         begin
           path, index = queue.pop(true)
         rescue ThreadError
           break
         end
 
-        texts[index] = ocr_engine.extract(path)
+        text = ocr_engine.extract(path)
+        save_result(texts, index, text, mutex, &)
       end
+    end
+
+    def save_result(texts, index, text, mutex)
+      mutex.synchronize do
+        texts[index] = text
+        yield
+      end
+    end
+
+    def report_progress(processed, total)
+      return unless block_given?
+
+      yield({
+        file_path: @pdf_path,
+        stage: :ocr,
+        current_page: processed,
+        percentage: ((processed.to_f / total) * 100).round(2),
+        remaining_pages: total - processed
+      })
     end
   end
 end

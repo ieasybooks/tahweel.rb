@@ -24,8 +24,9 @@ module Tahweel # rubocop:disable Style/Documentation
     pdf_path,
     dpi: PdfSplitter::DEFAULT_DPI,
     processor: :google_drive,
-    concurrency: Converter::DEFAULT_CONCURRENCY
-  ) = Converter.convert(pdf_path, dpi:, processor:, concurrency:)
+    concurrency: Converter::DEFAULT_CONCURRENCY,
+    &
+  ) = Converter.convert(pdf_path, dpi:, processor:, concurrency:, &)
 
   # Extracts text from an image file using the specified OCR processor.
   #

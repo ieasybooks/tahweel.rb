@@ -21,8 +21,15 @@ module Tahweel
       # @option options [Array<Symbol>] :formats Output formats (e.g., [:txt, :docx]).
       # @option options [String] :page_separator Separator string for TXT output.
       # @option options [String] :base_input_path The base path used to determine relative output structure.
+      # @param &block [Proc] A block that will be yielded with progress info.
+      # @yield [Hash] Progress info: {
+      #   stage: :splitting or :ocr,
+      #   current_page: Integer,
+      #   percentage: Float,
+      #   remaining_pages: Integer
+      # }
       # @return [void]
-      def self.process(file_path, options) = new(file_path, options).process
+      def self.process(file_path, options, &) = new(file_path, options).process(&)
 
       # Initializes a new FileProcessor.
       #
@@ -41,13 +48,20 @@ module Tahweel
       # 4. Runs the appropriate conversion/extraction pipeline.
       # 5. Writes the results to the configured formats.
       #
+      # @param &block [Proc] A block that will be yielded with progress info.
+      # @yield [Hash] Progress info: {
+      #   stage: :splitting or :ocr,
+      #   current_page: Integer,
+      #   percentage: Float,
+      #   remaining_pages: Integer
+      # }
       # @return [void]
-      def process
+      def process(&)
         ensure_output_directory_exists
 
         return if all_outputs_exist?
 
-        pdf? ? process_pdf : process_image
+        pdf? ? process_pdf(&) : process_image
       end
 
       private
@@ -63,12 +77,13 @@ module Tahweel
 
       def pdf? = File.extname(@file_path).downcase == ".pdf"
 
-      def process_pdf
+      def process_pdf(&)
         texts = Tahweel.convert(
           @file_path,
           dpi: @options[:dpi],
           processor: @options[:processor],
-          concurrency: @options.fetch(:page_concurrency, Tahweel::Converter::DEFAULT_CONCURRENCY)
+          concurrency: @options.fetch(:page_concurrency, Tahweel::Converter::DEFAULT_CONCURRENCY),
+          &
         )
 
         write_output(texts)
