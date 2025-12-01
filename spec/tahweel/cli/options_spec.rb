@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "etc"
 require "spec_helper"
 require "tahweel/cli/options"
 
@@ -115,7 +116,7 @@ RSpec.describe Tahweel::CLI::Options do
       let(:args) { ["file.pdf"] }
 
       it "uses the default file_concurrency value" do
-        expect(parsed_options[:file_concurrency]).to eq(1)
+        expect(parsed_options[:file_concurrency]).to eq((Etc.nprocessors - 2).clamp(2..))
       end
     end
 
