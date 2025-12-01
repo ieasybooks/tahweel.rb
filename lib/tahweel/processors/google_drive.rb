@@ -41,9 +41,8 @@ module Tahweel
       def extract(file_path)
         raise "File not found: #{file_path}" unless File.exist?(file_path)
 
-        file_id = upload_file(file_path)
-
         begin
+          file_id = upload_file(file_path)
           download_text(file_id).gsub("\r\n", "\n").gsub("﻿________________", "").strip
         ensure
           delete_file(file_id)
