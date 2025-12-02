@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## [0.1.1] - 2025-12-03
+
+### Changed
+
+- Change from `AUTH_DRIVE` to `AUTH_DRIVE_FILE` permission scope in `Authorizer`
+
 ## [0.1.0] - 2025-12-02
 
 ### Added
