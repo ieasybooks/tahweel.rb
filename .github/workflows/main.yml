@@ -36,6 +36,6 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-          bundler-cache: ${{ matrix.os != 'windows-2latest022' }}
+          bundler-cache: ${{ matrix.os != 'windows-latest' }}
       - name: Run the default task
         run: bundle exec rake
