@@ -18,8 +18,8 @@ module Tahweel
   # 3. Initiating the OAuth 2.0 flow via a local web server if needed.
   # 4. Exchanging the authorization code for credentials and persisting them.
   class Authorizer
-    CLIENT_ID = "296751211179-4cfbr5di1mremlu1kb03m3uog73u1g61.apps.googleusercontent.com"
-    CLIENT_SECRET = "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"
+    CLIENT_ID = "512416833080-hptj9s5r92pjmdgigrcugbp40ng9isvj.apps.googleusercontent.com"
+    CLIENT_SECRET = "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"
 
     PORT = 3027
     REDIRECT_URI = "http://localhost:#{PORT}/".freeze
