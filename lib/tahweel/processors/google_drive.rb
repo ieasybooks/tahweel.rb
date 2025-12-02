@@ -97,7 +97,8 @@ module Tahweel
 
         begin
           yield
-        rescue Google::Apis::RateLimitError, Google::Apis::TransmissionError, Google::Apis::ServerError
+        rescue Google::Apis::RateLimitError, Google::Apis::RequestTimeOutError,
+               Google::Apis::TransmissionError, Google::Apis::ServerError
           sleep([1.5**retries, 15].min + rand(0..1))
           retries += 1
           retry
