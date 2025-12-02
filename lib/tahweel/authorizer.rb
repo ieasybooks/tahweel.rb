@@ -41,7 +41,7 @@ module Tahweel
     def initialize
       @client_id = Google::Auth::ClientId.new(CLIENT_ID, CLIENT_SECRET)
       @token_store = Google::Auth::Stores::FileTokenStore.new(file: token_path)
-      @authorizer = Google::Auth::UserAuthorizer.new(@client_id, Google::Apis::DriveV3::AUTH_DRIVE, @token_store)
+      @authorizer = Google::Auth::UserAuthorizer.new(@client_id, Google::Apis::DriveV3::AUTH_DRIVE_FILE, @token_store)
     end
 
     # Performs the authorization process.
