@@ -31,10 +31,13 @@ Gem::Specification.new do |spec|
     end
   end
   spec.bindir = "bin"
-  spec.executables = %w[tahweel tahweel-clear]
+  spec.executables = %w[tahweel tahweel-ui tahweel-clear]
   spec.require_paths = ["lib"]
 
   spec.add_dependency "caracal", "~> 1.4"
+  spec.add_dependency "csv", "~> 3.3"
+  spec.add_dependency "fiddle", "~> 1.1"
+  spec.add_dependency "glimmer-dsl-libui", "~> 0.13.1"
   spec.add_dependency "google-apis-drive_v3", "~> 0.74.0"
   spec.add_dependency "googleauth", "~> 1.16"
   spec.add_dependency "launchy", "~> 3.1"

@@ -1,0 +1,197 @@
+#!/usr/bin/env ruby
+
+# frozen_string_literal: true
+
+# Add the ../lib directory to the load path so we can require 'tahweel'
+$LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
+
+require "glimmer-dsl-libui"
+require "launchy"
+require "tahweel"
+
+class TahweelApp # rubocop:disable Metrics/ClassLength,Style/Documentation
+  include Glimmer::LibUI::Application
+
+  body do
+    window("تحويل") do
+      margined true
+
+      vertical_box do
+        right_aligned_label("تحويل: حوّل الملفات من صيغة PDF إلى TXT و DOCX ↓")
+        convert_buttons
+        right_aligned_label("ملاحظة: يدعم تحويل الملفات بصيغة PDF أو صورة (JPG أو JPEG أو PNG) فقط.")
+
+        @progress_section = progress_section
+        @progress_section.visible = false
+      end
+    end
+  end
+
+  private
+
+  def convert_buttons
+    horizontal_box do
+      stretchy false
+
+      convert_folder_button
+      convert_file_button
+    end
+  end
+
+  def convert_file_button
+    @convert_file_btn = button("تحويل ملف واحد") do
+      stretchy true
+
+      on_clicked do
+        file = open_file
+        convert(File.dirname(file), [file]) if file && valid_file?(file)
+      end
+    end
+  end
+
+  def convert_folder_button
+    @convert_folder_btn = button("تحويل مجلد كامل") do
+      stretchy true
+
+      on_clicked do
+        folder = open_folder
+        paths = collect_files(folder)
+        convert(folder, paths) if paths.any?
+      end
+    end
+  end
+
+  def progress_section
+    group do
+      vertical_box do
+        @global_progress_label = right_aligned_label("التقدم العام:")
+        @global_progress = progress_bar { stretchy false }
+
+        @file_progress_label = right_aligned_label("تقدم الملف الحالي:")
+        @file_progress = progress_bar { stretchy false }
+      end
+    end
+  end
+
+  def valid_file?(file)
+    return true if %w[.pdf .jpg .jpeg .png].include? File.extname(file).downcase
+
+    msg_box_error("صيغة الملف غير مدعومة", "يجب أن يكون الملف بصيغة PDF أو صورة.")
+
+    false
+  end
+
+  def collect_files(folder)
+    paths = folder ? Tahweel::CLI::FileCollector.collect(folder) : []
+
+    return paths if folder && paths.any?
+
+    msg_box_error("لم نعثر على ملفات", "لم نعثر على ملفات لتحويلها في المجلد المختار.")
+
+    []
+  end
+
+  def convert(folder, paths)
+    disable_window
+
+    @progress_section.visible = true
+
+    Thread.new do
+      paths.each_with_index { |path, index| process_path(path, index, paths.size) }
+      finish_conversion(folder, paths.size)
+    end
+  end
+
+  def disable_window
+    @convert_file_btn.enabled = false
+    @convert_folder_btn.enabled = false
+  end
+
+  def process_path(path, index, total_files)
+    reset_file_progress(index, total_files)
+
+    Tahweel::CLI::FileProcessor.process(path, options(path)) do |progress|
+      Glimmer::LibUI.queue_main do
+        @file_progress.value = progress[:percentage].to_i
+        @file_progress_label.text = "تقدم الملف الحالي (#{stage_text(progress[:stage])})"
+      end
+    end
+  end
+
+  def reset_file_progress(index, total_files)
+    Glimmer::LibUI.queue_main do
+      @global_progress.value = ((index.to_f / total_files) * 100).to_i
+      @global_progress_label.text = "التقدم العام (#{index + 1}/#{total_files})"
+      @file_progress.value = 0
+      @file_progress_label.text = "تقدم الملف الحالي (#{stage_text(:preparing)})"
+    end
+  end
+
+  def finish_conversion(folder, total_files)
+    Glimmer::LibUI.queue_main do
+      @global_progress.value = @file_progress.value = 100
+      @global_progress_label.text = "التقدم العام (#{total_files}/#{total_files})"
+      @file_progress_label.text = "تقدم الملف الحالي (انتهى التحويل)"
+
+      enable_window
+      msg_box("اكتمل التحويل", convert_finished_message(total_files))
+    end
+
+    Launchy.open(folder)
+  end
+
+  def enable_window
+    @convert_file_btn.enabled = true
+    @convert_folder_btn.enabled = true
+  end
+
+  def options(path)
+    {
+      dpi: 150,
+      processor: :google_drive,
+      page_concurrency: Tahweel::Converter::DEFAULT_CONCURRENCY,
+      file_concurrency: 1,
+      formats: %i[txt docx],
+      base_input_path: File.directory?(path) ? path : File.dirname(path)
+    }
+  end
+
+  def convert_finished_message(files_count)
+    return "انتهى تحويل ملف واحد بنجاح." if files_count == 1
+    return "انتهى تحويل ملفين بنجاح." if files_count == 2
+
+    last_two_digits = files_count % 100
+
+    suffix = case last_two_digits
+             when 0..2 then "ملف"
+             when 3..10 then "ملفات"
+             else "ملفًا"
+             end
+
+    "انتهى تحويل #{files_count} #{suffix} بنجاح."
+  end
+
+  def right_aligned_label(text)
+    ref = nil
+
+    horizontal_box do
+      stretchy false
+      label("") { stretchy true }
+
+      ref = label(text) { stretchy false }
+    end
+
+    ref
+  end
+
+  def stage_text(stage)
+    case stage
+    when :preparing then "جارٍ التحضير..."
+    when :splitting then "جارٍ تقسيم الملف..."
+    when :ocr       then "جارٍ استخراج النصوص..."
+    else "جارٍ المعالجة..."
+    end
+  end
+end
+
+TahweelApp.launch
