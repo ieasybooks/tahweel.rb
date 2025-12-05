@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-
 # frozen_string_literal: true
 
 # Add the ../lib directory to the load path so we can require 'tahweel'
@@ -12,88 +11,153 @@ require "tahweel"
 class TahweelApp # rubocop:disable Metrics/ClassLength,Style/Documentation
   include Glimmer::LibUI::Application
 
+  TRANSLATIONS = {
+    ar: {
+      window_title: "تحويل",
+      title_label: "تحويل: حوّل الملفات من صيغة PDF إلى TXT و DOCX ↓",
+      note_label: "ملاحظة: يدعم تحويل الملفات بصيغة PDF أو صورة (JPG و JPEG و PNG) فقط.",
+      file_btn: "تحويل ملف واحد",
+      folder_btn: "تحويل مجلد كامل",
+      language_btn: "English",
+      global_progress: "التقدم العام:",
+      file_progress: "تقدم الملف الحالي:",
+      status_done: "انتهى التحويل.",
+      msg_success_title: "اكتمل التحويل",
+      msg_error_title: "خطأ",
+      msg_no_files: "لم نعثر على ملفات لتحويلها.",
+      msg_bad_extension: "صيغة الملف غير مدعومة.",
+      stage_preparing: "جارٍ التحضير...",
+      stage_splitting: "جارٍ تقسيم الملف...",
+      stage_ocr: "جارٍ استخراج النصوص...",
+      stage_done: "انتهى"
+    },
+    en: {
+      window_title: "Tahweel",
+      title_label: "Tahweel: Convert PDF files to TXT and DOCX ↓",
+      note_label: "Note: Tahweel supports PDF or image files (JPG, JPEG, and PNG) only.",
+      file_btn: "Convert a Single File",
+      folder_btn: "Convert a Folder",
+      language_btn: "العربية",
+      global_progress: "Progress:",
+      file_progress: "Current File:",
+      status_done: "Conversion complete.",
+      msg_success_title: "Conversion Complete",
+      msg_error_title: "Error",
+      msg_no_files: "No files found to convert.",
+      msg_bad_extension: "Unsupported file format.",
+      stage_preparing: "Preparing...",
+      stage_splitting: "Splitting file...",
+      stage_ocr: "Extracting text...",
+      stage_done: "Done"
+    }
+  }.freeze
+
+  def initialize(*args)
+    @lang = :ar
+    @rtl_components = []
+    @ltr_components = []
+
+    super
+  end
+
   body do
-    window("تحويل") do
+    @main_window = window(t(:window_title)) do
       margined true
 
       vertical_box do
-        right_aligned_label("تحويل: حوّل الملفات من صيغة PDF إلى TXT و DOCX ↓")
+        @header_label = right_aligned_label(t(:title_label))
         convert_buttons
-        right_aligned_label("ملاحظة: يدعم تحويل الملفات بصيغة PDF أو صورة (JPG أو JPEG أو PNG) فقط.")
+        @note_label = right_aligned_label(t(:note_label))
 
         @progress_section = progress_section
         @progress_section.visible = false
+
+        horizontal_separator { stretchy false }
+
+        @language_btn = language_button
       end
     end
   end
 
   private
 
-  def convert_buttons
+  def language_button # rubocop:disable Metrics/MethodLength
+    ref = nil
+
     horizontal_box do
       stretchy false
 
-      convert_folder_button
-      convert_file_button
+      right_alignment_label = label("") { stretchy true }
+      right_alignment_label.visible = false
+      @rtl_components << right_alignment_label
+
+      ref = button(t(:language_btn)) do
+        stretchy false
+        on_clicked { toggle_language }
+      end
+
+      left_alignment_label = label("") { stretchy true }
+      @ltr_components << left_alignment_label
     end
+
+    ref
   end
 
-  def convert_file_button
-    @convert_file_btn = button("تحويل ملف واحد") do
-      stretchy true
+  def convert_buttons
+    horizontal_box do
+      @ar_convert_folder_btn = button(t(:folder_btn, lang: :ar)) { on_clicked { on_folder_click } }
+      @rtl_components << @ar_convert_folder_btn
 
-      on_clicked do
-        file = open_file
-        convert(File.dirname(file), [file]) if file && valid_file?(file)
-      end
-    end
-  end
+      @convert_file_btn = button(t(:file_btn)) { on_clicked { on_file_click } }
 
-  def convert_folder_button
-    @convert_folder_btn = button("تحويل مجلد كامل") do
-      stretchy true
-
-      on_clicked do
-        folder = open_folder
-        paths = collect_files(folder)
-        convert(folder, paths) if paths.any?
-      end
+      @en_convert_folder_btn = button(t(:folder_btn, lang: :en)) { on_clicked { on_folder_click } }
+      @en_convert_folder_btn.visible = false
+      @rtl_components << @en_convert_folder_btn
     end
   end
 
   def progress_section
     group do
-      vertical_box do
-        @global_progress_label = right_aligned_label("التقدم العام:")
-        @global_progress = progress_bar { stretchy false }
+      stretchy false
 
-        @file_progress_label = right_aligned_label("تقدم الملف الحالي:")
-        @file_progress = progress_bar { stretchy false }
+      vertical_box do
+        @global_progress_label = right_aligned_label(t(:global_progress))
+        @global_progress = progress_bar { stretchy true }
+
+        @file_progress_label = right_aligned_label(t(:file_progress))
+        @file_progress = progress_bar { stretchy true }
       end
     end
+  end
+
+  def on_file_click
+    file = open_file
+    convert(File.dirname(file), [file]) if file && valid_file?(file)
   end
 
   def valid_file?(file)
     return true if %w[.pdf .jpg .jpeg .png].include? File.extname(file).downcase
 
-    msg_box_error("صيغة الملف غير مدعومة", "يجب أن يكون الملف بصيغة PDF أو صورة.")
-
+    msg_box_error(t(:msg_error_title), t(:msg_bad_extension))
     false
+  end
+
+  def on_folder_click
+    folder = open_folder
+    paths = collect_files(folder)
+    convert(folder, paths) if paths.any?
   end
 
   def collect_files(folder)
     paths = folder ? Tahweel::CLI::FileCollector.collect(folder) : []
-
     return paths if folder && paths.any?
 
-    msg_box_error("لم نعثر على ملفات", "لم نعثر على ملفات لتحويلها في المجلد المختار.")
-
+    msg_box_error(t(:msg_error_title), t(:msg_no_files))
     []
   end
 
   def convert(folder, paths)
     disable_window
-
     @progress_section.visible = true
 
     Thread.new do
@@ -104,45 +168,24 @@ class TahweelApp # rubocop:disable Metrics/ClassLength,Style/Documentation
 
   def disable_window
     @convert_file_btn.enabled = false
-    @convert_folder_btn.enabled = false
+    @ar_convert_folder_btn.enabled = false
+    @en_convert_folder_btn.enabled = false
+    @language_btn.enabled = false
   end
 
   def process_path(path, index, total_files)
     reset_file_progress(index, total_files)
 
-    Tahweel::CLI::FileProcessor.process(path, options(path)) do |progress|
-      Glimmer::LibUI.queue_main do
-        @file_progress.value = progress[:percentage].to_i
-        @file_progress_label.text = "تقدم الملف الحالي (#{stage_text(progress[:stage])})"
-      end
-    end
+    Tahweel::CLI::FileProcessor.process(path, options(path)) { update_file_progress(_1) }
   end
 
   def reset_file_progress(index, total_files)
     Glimmer::LibUI.queue_main do
       @global_progress.value = ((index.to_f / total_files) * 100).to_i
-      @global_progress_label.text = "التقدم العام (#{index + 1}/#{total_files})"
+      @global_progress_label.text = "#{t(:global_progress)} (#{index + 1}/#{total_files})"
       @file_progress.value = 0
-      @file_progress_label.text = "تقدم الملف الحالي (#{stage_text(:preparing)})"
+      @file_progress_label.text = "#{t(:file_progress)} #{t(:stage_preparing)}"
     end
-  end
-
-  def finish_conversion(folder, total_files)
-    Glimmer::LibUI.queue_main do
-      @global_progress.value = @file_progress.value = 100
-      @global_progress_label.text = "التقدم العام (#{total_files}/#{total_files})"
-      @file_progress_label.text = "تقدم الملف الحالي (انتهى التحويل)"
-
-      enable_window
-      msg_box("اكتمل التحويل", convert_finished_message(total_files))
-    end
-
-    Launchy.open(folder)
-  end
-
-  def enable_window
-    @convert_file_btn.enabled = true
-    @convert_folder_btn.enabled = true
   end
 
   def options(path)
@@ -156,7 +199,50 @@ class TahweelApp # rubocop:disable Metrics/ClassLength,Style/Documentation
     }
   end
 
+  def update_file_progress(progress)
+    Glimmer::LibUI.queue_main do
+      @file_progress.value = progress[:percentage].to_i
+      @file_progress_label.text = "#{t(:file_progress)} (#{stage_text(progress[:stage])})"
+    end
+  end
+
+  def stage_text(stage)
+    case stage
+    when :splitting then t(:stage_splitting)
+    when :ocr       then t(:stage_ocr)
+    end
+  end
+
+  def finish_conversion(folder, total_files)
+    Glimmer::LibUI.queue_main do
+      @global_progress.value = 100
+      @file_progress.value = 100
+      @global_progress_label.text = "#{t(:global_progress)} (#{total_files}/#{total_files})"
+      @file_progress_label.text = "#{t(:file_progress)} (#{t(:stage_done)})"
+
+      enable_window
+      msg_box(t(:msg_success_title), convert_finished_message(total_files))
+    end
+
+    Launchy.open(folder)
+  end
+
+  def enable_window
+    @convert_file_btn.enabled = true
+    @ar_convert_folder_btn.enabled = true
+    @en_convert_folder_btn.enabled = true
+    @language_btn.enabled = true
+  end
+
   def convert_finished_message(files_count)
+    if @lang == :en
+      "Finished converting #{files_count} file(s) successfully."
+    else
+      arabic_convert_finished_message(files_count)
+    end
+  end
+
+  def arabic_convert_finished_message(files_count)
     return "انتهى تحويل ملف واحد بنجاح." if files_count == 1
     return "انتهى تحويل ملفين بنجاح." if files_count == 2
 
@@ -171,26 +257,39 @@ class TahweelApp # rubocop:disable Metrics/ClassLength,Style/Documentation
     "انتهى تحويل #{files_count} #{suffix} بنجاح."
   end
 
+  def toggle_language # rubocop:disable Metrics/AbcSize
+    @lang = @lang == :ar ? :en : :ar
+
+    @main_window.title = t(:window_title)
+    @header_label.text = t(:title_label)
+    @note_label.text = t(:note_label)
+    @convert_file_btn.text = t(:file_btn)
+    @language_btn.text = t(:language_btn)
+
+    @global_progress_label.text = t(:global_progress)
+    @file_progress_label.text = t(:file_progress)
+
+    @rtl_components.each { _1.visible = !_1.visible }
+    @ltr_components.each { _1.visible = !_1.visible }
+  end
+
+  def t(key, lang: nil) = TRANSLATIONS[lang || @lang][key]
+
   def right_aligned_label(text)
     ref = nil
 
     horizontal_box do
-      stretchy false
-      label("") { stretchy true }
+      right_alignment_label = label("") { stretchy true }
+      @rtl_components << right_alignment_label
 
       ref = label(text) { stretchy false }
+
+      left_alignment_label = label("") { stretchy true }
+      left_alignment_label.visible = false
+      @ltr_components << left_alignment_label
     end
 
     ref
-  end
-
-  def stage_text(stage)
-    case stage
-    when :preparing then "جارٍ التحضير..."
-    when :splitting then "جارٍ تقسيم الملف..."
-    when :ocr       then "جارٍ استخراج النصوص..."
-    else "جارٍ المعالجة..."
-    end
   end
 end
 
