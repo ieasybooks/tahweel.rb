@@ -19,11 +19,11 @@ RSpec.describe Tahweel::CLI::Options do
     end
 
     context "when valid arguments are provided" do
-      let(:args) { ["file.pdf", "--dpi", "300", "--page-concurrency", "5", "--file-concurrency", "2"] }
+      let(:args) { ["file.pdf", "--dpi", "300", "--ocr-concurrency", "5", "--file-concurrency", "2"] }
 
       it "parses options correctly" do # rubocop:disable RSpec/MultipleExpectations
         expect(parsed_options[:dpi]).to eq(300)
-        expect(parsed_options[:page_concurrency]).to eq(5)
+        expect(parsed_options[:ocr_concurrency]).to eq(5)
         expect(parsed_options[:file_concurrency]).to eq(2)
       end
 
@@ -121,12 +121,12 @@ RSpec.describe Tahweel::CLI::Options do
     end
 
     context "when invalid page concurrency is provided" do
-      let(:args) { ["file.pdf", "--page-concurrency", "0"] }
+      let(:args) { ["file.pdf", "--ocr-concurrency", "0"] }
 
       it "aborts with an error message" do
         expect do
           described_class.parse(args)
-        end.to raise_error(SystemExit).and output(/Error: invalid argument: --page-concurrency must be a positive integer/).to_stderr # rubocop:disable Layout/LineLength
+        end.to raise_error(SystemExit).and output(/Error: invalid argument: --ocr-concurrency must be a positive integer/).to_stderr # rubocop:disable Layout/LineLength
       end
     end
 

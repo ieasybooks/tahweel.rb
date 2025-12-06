@@ -18,7 +18,7 @@ module Tahweel
       # @option options [String] :output The directory to save output files (defaults to current directory).
       # @option options [Integer] :dpi DPI for PDF conversion (defaults to 150).
       # @option options [Symbol] :processor The OCR processor to use (e.g., :google_drive).
-      # @option options [Integer] :page_concurrency Max concurrent operations.
+      # @option options [Integer] :ocr_concurrency Max concurrent operations.
       # @option options [Array<Symbol>] :formats Output formats (e.g., [:txt, :docx]).
       # @option options [String] :page_separator Separator string for TXT output.
       # @option options [String] :base_input_path The base path used to determine relative output structure.
@@ -83,7 +83,7 @@ module Tahweel
           @file_path,
           dpi: @options[:dpi],
           processor: @options[:processor],
-          concurrency: @options.fetch(:page_concurrency, Tahweel::Converter::DEFAULT_CONCURRENCY),
+          concurrency: @options.fetch(:ocr_concurrency, Tahweel::Converter::DEFAULT_CONCURRENCY),
           &
         )
 

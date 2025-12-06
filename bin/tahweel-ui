@@ -196,7 +196,7 @@ class TahweelApp # rubocop:disable Metrics/ClassLength,Style/Documentation
     {
       dpi: 150,
       processor: :google_drive,
-      page_concurrency: Tahweel::Converter::DEFAULT_CONCURRENCY,
+      ocr_concurrency: Tahweel::Converter::DEFAULT_CONCURRENCY,
       file_concurrency: 1,
       formats: %i[txt docx],
       base_input_path: File.directory?(path) ? path : File.dirname(path)

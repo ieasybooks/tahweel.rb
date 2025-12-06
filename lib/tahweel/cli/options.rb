@@ -37,7 +37,7 @@ module Tahweel
         {
           dpi: 150,
           processor: :google_drive,
-          page_concurrency: Tahweel::Converter::DEFAULT_CONCURRENCY,
+          ocr_concurrency: Tahweel::Converter::DEFAULT_CONCURRENCY,
           file_concurrency: (Etc.nprocessors - 2).clamp(2..),
           output: nil,
           formats: %i[txt docx],
@@ -76,17 +76,17 @@ module Tahweel
         end
 
         opts.on(
-          "-P", "--page-concurrency PAGE_CONCURRENCY", POSITIVE_INTEGER,
-          "Max concurrent OCR operations (default: #{options[:page_concurrency]})"
-        ) do |value|
-          options[:page_concurrency] = value
-        end
-
-        opts.on(
           "-F", "--file-concurrency FILE_CONCURRENCY", POSITIVE_INTEGER,
           "Max concurrent files to process (default: CPUs - 2 = #{options[:file_concurrency]})"
         ) do |value|
           options[:file_concurrency] = value
+        end
+
+        opts.on(
+          "-O", "--ocr-concurrency OCR_CONCURRENCY", POSITIVE_INTEGER,
+          "Max concurrent OCR operations (default: #{options[:ocr_concurrency]})"
+        ) do |value|
+          options[:ocr_concurrency] = value
         end
 
         opts.on(
