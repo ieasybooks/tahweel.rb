@@ -130,6 +130,7 @@ module Tahweel
       release_url = latest_release_url
       zip_path = File.join(cache_dir, File.basename(release_url))
       URI.parse(release_url).open { File.binwrite(zip_path, _1.read) }
+      zip_path
     end
 
     # Retrieves the download URL for the latest Windows release of Poppler.
