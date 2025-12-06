@@ -1,14 +1,12 @@
 # frozen_string_literal: true
 
 require "fileutils"
-require "rbconfig"
 require "securerandom"
 require "tmpdir"
-require "vips"
 
 module Tahweel
   # Handles the logic for splitting a PDF file into individual image pages.
-  # Uses the libvips library for high-performance image processing.
+  # Uses Poppler utils (pdftoppm, pdfinfo) for high-performance image processing.
   class PdfSplitter
     # Default DPI used when converting PDF pages to images.
     # 150 DPI is a good balance between quality and file size for general documents.
@@ -25,7 +23,7 @@ module Tahweel
     #   percentage: Float,
     #   remaining_pages: Integer
     # }
-    # @return [Hash] A hash containing the :folder_path (String) and :image_paths (Array<String>).
+    # @return [Hash] A hash containing the :folder_path (String) and :images_paths (Array<String>).
     def self.split(pdf_path, dpi: DEFAULT_DPI, &) = new(pdf_path, dpi:).split(&)
 
     # Initializes a new PdfSplitter instance.
@@ -35,13 +33,12 @@ module Tahweel
     def initialize(pdf_path, dpi: DEFAULT_DPI)
       @pdf_path = pdf_path
       @dpi = dpi
-      @image_paths = []
     end
 
     # Executes the PDF splitting process.
     #
     # This method performs the following steps:
-    # 1. Checks if libvips is installed (skips on Windows).
+    # 1. Checks if Poppler utils are available (installs if missing on Windows).
     # 2. Validates the existence of the source PDF file.
     # 3. Creates a unique temporary directory for output.
     # 4. Iterates through each page of the PDF and converts it to a PNG image.
@@ -55,12 +52,11 @@ module Tahweel
     # }
     # @return [Hash] Result hash with keys:
     #   - :folder_path [String] The absolute path to the temporary directory containing the images.
-    #   - :image_paths [Array<String>] List of absolute paths for each generated image file.
-    # @raise [RuntimeError] If the PDF file is not found or libvips is missing.
-    # @raise [Vips::Error] If the underlying VIPS library encounters an error during processing.
+    #   - :images_paths [Array<String>] List of absolute paths for each generated image file.
+    # @raise [RuntimeError] If the PDF file is not found.
     def split(&)
-      check_libvips_installed!
       validate_file_exists!
+      PopplerInstaller.ensure_installed!
       setup_output_directory
       process_pages(&)
       result
@@ -68,20 +64,7 @@ module Tahweel
 
     private
 
-    attr_reader :pdf_path, :dpi, :image_paths, :output_dir
-
-    # Checks if the `vips` CLI tool is available in the system PATH.
-    # Skips this check on Windows systems, assuming the environment is managed differently.
-    # Aborts execution with an error message if vips is missing.
-    def check_libvips_installed!
-      return if /mswin|mingw|cygwin/.match?(RbConfig::CONFIG["host_os"])
-      return if system("vips --version", out: File::NULL, err: File::NULL)
-
-      abort "Error: libvips is not installed. Please install it before using Tahweel.\n" \
-            "MacOS: `brew install vips`\n" \
-            "Ubuntu: `sudo apt install libvips42`\n" \
-            "Windows: Already installed with the Tahweel gem"
-    end
+    attr_reader :pdf_path, :dpi, :output_dir
 
     # Ensures the source PDF file actually exists.
     # @raise [RuntimeError] if the file is missing.
@@ -123,16 +106,34 @@ module Tahweel
     # Calculates the total number of pages in the PDF by loading the first page metadata.
     # @return [Integer] The page count.
     def total_pages
-      @total_pages ||= Vips::Image.pdfload(pdf_path, page: 0, dpi: dpi, access: :sequential).get("pdf-n_pages")
+      @total_pages ||= begin
+        output = `#{PopplerInstaller.pdfinfo_path} "#{pdf_path}"`.encode(
+          "UTF-8",
+          invalid: :replace, undef: :replace, replace: ""
+        )
+
+        pages = output[/Pages:\s*(\d+)/, 1]
+        raise "Failed to get page count from PDF: #{output}" unless pages
+
+        pages.to_i
+      end
     end
 
     # Extracts a specific page from the PDF and saves it as a PNG.
     #
     # @param page_num [Integer] The zero-based index of the page to extract.
     def extract_page(page_num)
-      output_path = File.join(output_dir, "page_#{page_num + 1}.png")
-      Vips::Image.pdfload(pdf_path, page: page_num, dpi: dpi, access: :sequential).write_to_file(output_path)
-      image_paths << output_path
+      output_prefix = File.join(output_dir, "page")
+
+      system(
+        PopplerInstaller.pdftoppm_path,
+        "-png",
+        "-r", dpi.to_s,
+        "-f", (page_num + 1).to_s,
+        "-l", (page_num + 1).to_s,
+        "\"#{pdf_path}\"",
+        "\"#{output_prefix}\""
+      )
     end
 
     # Constructs the final result hash.
@@ -140,7 +141,7 @@ module Tahweel
     def result
       {
         folder_path: output_dir,
-        image_paths: image_paths
+        images_paths: Dir.glob(File.join(output_dir, "page_*.png")).sort!
       }
     end
   end
