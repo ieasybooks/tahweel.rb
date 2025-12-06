@@ -11,10 +11,15 @@ require "tahweel/cli/progress_renderer"
 begin
   soft, hard = Process.getrlimit(:NOFILE)
   Process.setrlimit(:NOFILE, [4096, hard].min) if soft < 4096
-rescue StandardError
-  puts "\e[31mTahweel failed to increase the soft limit of file descriptors to 4096."
-  puts "If you faced connection errors or the CLI froze, try running `ulimit -n 4096` in your terminal."
-  puts "If you still face issues, please report them at https://github.com/ieasybooks/tahweel.rb/issues.\e[0m"
+rescue Exception
+  if Gem.win_platform?
+    puts "\e[33mWarning: Could not adjust file descriptor limit on Windows. Proceeding with default limits."
+    puts "If you faced connection errors or the CLI froze, please report at https://github.com/ieasybooks/tahweel.rb/issues.\e[0m"
+  else
+    puts "\e[33mWarning: Tahweel failed to increase the soft limit of file descriptors to 4096."
+    puts "If you faced connection errors or the CLI froze, try running `ulimit -n 4096` in your terminal."
+    puts "If you still face issues, please report them at https://github.com/ieasybooks/tahweel.rb/issues.\e[0m"
+  end
 end
 
 begin
