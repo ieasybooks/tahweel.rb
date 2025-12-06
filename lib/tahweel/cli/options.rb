@@ -33,6 +33,8 @@ module Tahweel
         options
       end
 
+      # Returns the default configuration options.
+      # @return [Hash] Default options.
       def self.default_options
         {
           dpi: 150,
@@ -45,6 +47,10 @@ module Tahweel
         }
       end
 
+      # Configures the OptionParser instance.
+      #
+      # @param opts [OptionParser] The parser instance.
+      # @param options [Hash] The options hash to populate.
       def self.configure_parser(opts, options) # rubocop:disable Metrics/MethodLength,Metrics/AbcSize
         opts.program_name = "tahweel"
         opts.version = Tahweel::VERSION
@@ -111,6 +117,10 @@ module Tahweel
         end
       end
 
+      # Validates that arguments were provided.
+      #
+      # @param args [Array<String>] The remaining arguments after parsing.
+      # @param parser [OptionParser] The parser instance for printing help.
       def self.validate_args!(args, parser)
         return unless args.empty?
 

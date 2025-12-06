@@ -67,8 +67,11 @@ module Tahweel
 
       private
 
+      # Creates the output directory if it doesn't exist.
       def ensure_output_directory_exists = FileUtils.mkdir_p(output_directory)
 
+      # Checks if all requested output formats already exist.
+      # @return [Boolean] True if all output files exist.
       def all_outputs_exist?
         @options[:formats].all? do |format|
           extension = Tahweel::Writer.new(format: format).extension
@@ -76,8 +79,12 @@ module Tahweel
         end
       end
 
+      # Checks if the input file is a PDF.
+      # @return [Boolean]
       def pdf? = File.extname(@file_path).downcase == ".pdf"
 
+      # Handles PDF processing: splitting, OCR, and saving.
+      # @param &block [Proc] Progress callback.
       def process_pdf(&)
         texts = Tahweel.convert(
           @file_path,
@@ -90,8 +97,11 @@ module Tahweel
         write_output(texts)
       end
 
+      # Handles single image processing.
       def process_image = write_output([Tahweel.extract(@file_path, processor: @options[:processor])])
 
+      # Writes the extracted text to all configured formats.
+      # @param texts [Array<String>] The list of extracted texts (per page).
       def write_output(texts)
         Tahweel::Writer.write(
           texts,
@@ -101,6 +111,7 @@ module Tahweel
         )
       end
 
+      # @return [String] The full path for output files without extension.
       def base_output_path = File.join(output_directory, File.basename(@file_path, ".*"))
 
       # Determines the output directory.

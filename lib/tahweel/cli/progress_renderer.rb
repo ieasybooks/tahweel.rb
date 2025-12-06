@@ -102,6 +102,7 @@ module Tahweel
 
       private
 
+      # Starts a background thread to refresh the display periodically.
       def start_ticker
         @ticker_thread = Thread.new do
           while @running
@@ -111,6 +112,7 @@ module Tahweel
         end
       end
 
+      # Renders the progress dashboard to stdout.
       def render # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
         # Move cursor up to the start of our block
         $stdout.print "\e[#{@concurrency + 1}A"
@@ -138,6 +140,11 @@ module Tahweel
         $stdout.flush
       end
 
+      # Truncates a file path to fit within the display.
+      #
+      # @param path [String] The file path.
+      # @param max_length [Integer] Maximum allowed length.
+      # @return [String] The truncated path.
       def truncate_path(path, max_length)
         return path.ljust(max_length) if path.length <= max_length
 

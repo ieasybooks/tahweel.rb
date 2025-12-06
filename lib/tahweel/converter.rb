@@ -72,6 +72,12 @@ module Tahweel
 
     private
 
+    # Processes the list of images concurrently using the specified OCR engine.
+    #
+    # @param images_paths [Array<String>] List of paths to the image files.
+    # @param ocr_engine [Tahweel::Ocr] The initialized OCR engine instance.
+    # @param &block [Proc] Block to yield progress updates.
+    # @return [Array<String>] The text extracted from the images.
     def process_images(images_paths, ocr_engine, &)
       texts = Array.new(images_paths.size)
       mutex = Mutex.new
@@ -85,18 +91,36 @@ module Tahweel
       texts
     end
 
+    # Builds a queue of images paths and their indices.
+    #
+    # @param images_paths [Array<String>] List of image paths.
+    # @return [Queue] A queue containing [path, index] tuples.
     def build_queue(images_paths)
       queue = Queue.new
       images_paths.each_with_index { |path, index| queue << [path, index] }
       queue
     end
 
+    # Spawns worker threads to process items from the queue.
+    #
+    # @param queue [Queue] The queue of images to process.
+    # @param ocr_engine [Tahweel::Ocr] The OCR engine.
+    # @param texts [Array<String>] Shared array to store results.
+    # @param mutex [Mutex] Mutex for thread-safe updates.
+    # @param &block [Proc] Block to yield progress updates.
     def run_workers(queue, ocr_engine, texts, mutex, &)
       Array.new(@concurrency) do
         Thread.new { process_queue_items(queue, ocr_engine, texts, mutex, &) }
       end.each(&:join)
     end
 
+    # Processing loop for a single worker thread.
+    #
+    # @param queue [Queue] The shared queue.
+    # @param ocr_engine [Tahweel::Ocr] The OCR engine.
+    # @param texts [Array<String>] Shared result array.
+    # @param mutex [Mutex] Synchronization primitive.
+    # @param &block [Proc] Block to yield progress updates.
     def process_queue_items(queue, ocr_engine, texts, mutex, &)
       loop do
         begin
@@ -110,6 +134,13 @@ module Tahweel
       end
     end
 
+    # Thread-safe saving of OCR results.
+    #
+    # @param texts [Array<String>] The results array.
+    # @param index [Integer] Index of the current page.
+    # @param text [String] Extracted text.
+    # @param mutex [Mutex] Synchronization primitive.
+    # @yield Executes the progress reporting block within the lock.
     def save_result(texts, index, text, mutex)
       mutex.synchronize do
         texts[index] = text
@@ -117,6 +148,11 @@ module Tahweel
       end
     end
 
+    # Reports progress to the optional block.
+    #
+    # @param processed [Integer] Number of pages processed.
+    # @param total [Integer] Total number of pages.
+    # @yield [Hash] Progress information.
     def report_progress(processed, total)
       return unless block_given?
 
