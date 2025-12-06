@@ -104,7 +104,16 @@ module Tahweel
     end
 
     # Opens the system default browser to the Google Authorization URL.
-    def open_browser_for_auth = Launchy.open(@authorizer.get_authorization_url(base_url: REDIRECT_URI))
+    def open_browser_for_auth
+      url = @authorizer.get_authorization_url(base_url: REDIRECT_URI)
+
+      if Gem.win_platform?
+        # https://github.com/copiousfreetime/launchy/issues/167
+        system("start \"\" \"#{url}\"")
+      else
+        Launchy.open(url)
+      end
+    end
 
     # Listens on the local server for the OAuth callback request.
     # Handles multiple incoming requests to filter out noise (like favicon.ico).

@@ -69,23 +69,54 @@ RSpec.describe Tahweel::Authorizer do
         allow(Launchy).to receive(:open)
       end
 
-      it "opens the browser, exchanges the code, and returns credentials" do # rubocop:disable RSpec/MultipleExpectations,RSpec/ExampleLength
-        allow(authorizer).to receive(:listen_for_auth_code).and_return("AUTH_CODE") # rubocop:disable RSpec/SubjectStub
-        allow(google_authorizer)
-          .to receive(:get_and_store_credentials_from_code)
-          .with(
-            user_id: described_class::USER_ID,
-            code: "AUTH_CODE",
-            base_url: described_class::REDIRECT_URI
-          )
-          .and_return(:new_creds)
-        allow(google_authorizer).to receive(:get_authorization_url).and_return("http://auth.url")
+      context "when on a non-Windows platform" do # rubocop:disable RSpec/NestedGroups
+        before { allow(Gem).to receive(:win_platform?).and_return(false) }
 
-        result = authorizer.authorize
+        it "opens the browser using Launchy, exchanges the code, and returns credentials" do # rubocop:disable RSpec/MultipleExpectations,RSpec/ExampleLength
+          allow(authorizer).to receive(:listen_for_auth_code).and_return("AUTH_CODE") # rubocop:disable RSpec/SubjectStub
+          allow(google_authorizer)
+            .to receive(:get_and_store_credentials_from_code)
+            .with(
+              user_id: described_class::USER_ID,
+              code: "AUTH_CODE",
+              base_url: described_class::REDIRECT_URI
+            )
+            .and_return(:new_creds)
+          allow(google_authorizer).to receive(:get_authorization_url).and_return("http://auth.url")
 
-        expect(result).to eq(:new_creds)
-        expect(Launchy).to have_received(:open).with("http://auth.url")
-        expect(server).to have_received(:close)
+          result = authorizer.authorize
+
+          expect(result).to eq(:new_creds)
+          expect(Launchy).to have_received(:open).with("http://auth.url")
+          expect(server).to have_received(:close)
+        end
+      end
+
+      context "when on a Windows platform" do # rubocop:disable RSpec/NestedGroups
+        before do
+          allow(Gem).to receive(:win_platform?).and_return(true)
+          allow(authorizer).to receive(:system) # rubocop:disable RSpec/SubjectStub
+        end
+
+        it "opens the browser using the 'start' command, exchanges the code, and returns credentials" do # rubocop:disable RSpec/MultipleExpectations,RSpec/ExampleLength
+          allow(authorizer).to receive(:listen_for_auth_code).and_return("AUTH_CODE") # rubocop:disable RSpec/SubjectStub
+          allow(google_authorizer)
+            .to receive(:get_and_store_credentials_from_code)
+            .with(
+              user_id: described_class::USER_ID,
+              code: "AUTH_CODE",
+              base_url: described_class::REDIRECT_URI
+            )
+            .and_return(:new_creds)
+          allow(google_authorizer).to receive(:get_authorization_url).and_return("http://auth.url")
+
+          result = authorizer.authorize
+
+          expect(result).to eq(:new_creds)
+          expect(authorizer).to have_received(:system).with("start \"\" \"http://auth.url\"") # rubocop:disable RSpec/SubjectStub
+          expect(Launchy).not_to have_received(:open)
+          expect(server).to have_received(:close)
+        end
       end
 
       it "raises an error if no code is received" do # rubocop:disable RSpec/MultipleExpectations,RSpec/ExampleLength
