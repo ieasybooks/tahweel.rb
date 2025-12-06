@@ -13,10 +13,11 @@ class TahweelApp # rubocop:disable Metrics/ClassLength,Style/Documentation
   include Glimmer::LibUI::Application
 
   TRANSLATIONS = {
+    # https://www.perplexity.ai/search/add-direction-unicode-controls-Z5haIOFEQZeCbG5B8Wt2dg#3
     ar: {
       window_title: "تحويل",
-      title_label: "تحويل: حوّل الملفات من صيغة PDF إلى TXT و DOCX ↓",
-      note_label: "ملاحظة: يدعم تحويل الملفات بصيغة PDF أو صورة (JPG و JPEG و PNG) فقط.",
+      title_label: "‫تحويل: حوّل الملفات من صيغة ‪PDF‬ إلى ‪TXT‬ و ‪DOCX‬ ↓‬",
+      note_label: "‫ملاحظة: يدعم تحويل الملفات بصيغة ‪PDF‬ أو صورة (‪JPG‬ و ‪JPEG‬ و ‪PNG‬) فقط.‬",
       file_btn: "تحويل ملف واحد",
       folder_btn: "تحويل مجلد كامل",
       language_btn: "English",
@@ -183,7 +184,7 @@ class TahweelApp # rubocop:disable Metrics/ClassLength,Style/Documentation
   def reset_file_progress(index, total_files)
     Glimmer::LibUI.queue_main do
       @global_progress.value = ((index.to_f / total_files) * 100).to_i
-      @global_progress_label.text = "#{t(:global_progress)} (#{index}/#{total_files})"
+      @global_progress_label.text = "\u202B#{t(:global_progress)} (\u202A#{index}/#{total_files}\u202C)\u202C"
       @file_progress.value = 0
       @file_progress_label.text = "#{t(:file_progress)} #{t(:stage_preparing)}"
     end
