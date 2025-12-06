@@ -4,6 +4,7 @@
 # Add the ../lib directory to the load path so we can require 'tahweel'
 $LOAD_PATH.unshift(File.expand_path("../lib", __dir__))
 
+require "matrix"
 require "glimmer-dsl-libui"
 require "launchy"
 require "tahweel"
