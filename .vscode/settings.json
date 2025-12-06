@@ -1,5 +1,6 @@
 {
   "workbench.iconTheme": "vscode-icons",
+  "editor.rulers": [80, 120, 140],
   "files.insertFinalNewline": true,
   "[ruby]": {
     "editor.defaultFormatter": "Shopify.ruby-lsp",
