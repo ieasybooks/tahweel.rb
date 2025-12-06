@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "etc"
 require "fileutils"
 require "securerandom"
 require "tmpdir"
@@ -91,18 +92,68 @@ module Tahweel
     # }
     # @return [void]
     def process_pages(&)
-      total_pages.times do |i|
-        extract_page(i)
+      mutex = Mutex.new
+      processed_count = 0
 
-        next unless block_given?
-
-        yield({
-          file_path: @pdf_path, stage: :splitting,
-          current_page: i + 1,
-          percentage: (((i + 1).to_f / total_pages) * 100).round(2),
-          remaining_pages: total_pages - (i + 1)
-        })
+      run_workers(build_queue, mutex) do
+        processed_count += 1
+        report_progress(processed_count, &)
       end
+    end
+
+    # Builds a queue containing all page indices to be processed.
+    # @return [Queue] The queue populated with page numbers.
+    def build_queue
+      queue = Queue.new
+      total_pages.times { queue << _1 }
+      queue
+    end
+
+    # Spawns and manages worker threads to process the queue.
+    #
+    # @param queue [Queue] The queue of pages to process.
+    # @param mutex [Mutex] Synchronization primitive for thread safety.
+    # @param &block [Proc] Block to execute when a page is processed.
+    def run_workers(queue, mutex, &)
+      concurrency = (Etc.nprocessors - 2).clamp(2..)
+
+      Array.new([concurrency, total_pages].min) do
+        Thread.new { process_queue_items(queue, mutex, &) }
+      end.each(&:join)
+    end
+
+    # Processing loop for individual worker threads.
+    #
+    # @param queue [Queue] The shared queue of pages.
+    # @param mutex [Mutex] Synchronization primitive.
+    # @param &block [Proc] Block to yield for progress updates.
+    def process_queue_items(queue, mutex, &)
+      loop do
+        begin
+          page_num = queue.pop(true)
+        rescue ThreadError
+          break
+        end
+
+        extract_page(page_num)
+
+        mutex.synchronize(&)
+      end
+    end
+
+    # Reports progress back to the caller.
+    #
+    # @param processed [Integer] Number of pages processed so far.
+    # @param &block [Proc] The progress callback block.
+    def report_progress(processed, &)
+      return unless block_given?
+
+      yield({
+        file_path: @pdf_path, stage: :splitting,
+        current_page: processed,
+        percentage: ((processed.to_f / total_pages) * 100).round(2),
+        remaining_pages: total_pages - processed
+      })
     end
 
     # Calculates the total number of pages in the PDF by loading the first page metadata.
