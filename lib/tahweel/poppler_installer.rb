@@ -5,6 +5,7 @@ require "json"
 require "net/http"
 require "open-uri"
 require "uri"
+
 require "xdg"
 require "zip"
 
@@ -116,7 +117,8 @@ module Tahweel
     # @param cmd [String] The command to check for.
     # @return [Boolean] true if the command exists in the PATH.
     def command_exists?(cmd)
-      Gem.win_platform? ? system("where #{cmd} > NUL 2>&1") : system("which #{cmd} > /dev/null 2>&1")
+      tool = Gem.win_platform? ? "where" : "which"
+      system("#{tool} #{cmd} > #{File::NULL} 2>&1")
     end
 
     # Downloads the latest Poppler release zip file.

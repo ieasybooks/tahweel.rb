@@ -1,15 +1,19 @@
 # frozen_string_literal: true
 
 require_relative "tahweel/version"
+require_relative "tahweel/cli/options"
+require_relative "tahweel/cli/file_processor"
+require_relative "tahweel/cli/file_collector"
 require_relative "tahweel/authorizer"
 require_relative "tahweel/poppler_installer"
 require_relative "tahweel/pdf_splitter"
 require_relative "tahweel/ocr"
+require_relative "tahweel/processors/google_drive"
 require_relative "tahweel/converter"
 require_relative "tahweel/writer"
-require_relative "tahweel/cli/file_processor"
-require_relative "tahweel/cli/file_collector"
-require_relative "tahweel/cli/options"
+require_relative "tahweel/writers/txt"
+require_relative "tahweel/writers/docx"
+require_relative "tahweel/writers/json"
 
 module Tahweel # rubocop:disable Style/Documentation
   class Error < StandardError; end

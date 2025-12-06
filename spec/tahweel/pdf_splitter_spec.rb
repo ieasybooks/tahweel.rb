@@ -61,25 +61,25 @@ RSpec.describe Tahweel::PdfSplitter do
 
         # Expect pdftoppm execution for page 1 and 2
         expect(splitter).to have_received(:system).with(
-          pdftoppm_path, "-png", "-r", "150", "-f", "1", "-l", "1", "\"test.pdf\"", "\"#{output_dir}/page\""
+          pdftoppm_path, "-png", "-r", "150", "-f", "1", "-l", "1", "test.pdf", "#{output_dir}/page"
         )
 
         expect(splitter).to have_received(:system).with(
-          pdftoppm_path, "-png", "-r", "150", "-f", "2", "-l", "2", "\"test.pdf\"", "\"#{output_dir}/page\""
+          pdftoppm_path, "-png", "-r", "150", "-f", "2", "-l", "2", "test.pdf", "#{output_dir}/page"
         )
       end
 
       it "returns the expected result hash" do # rubocop:disable RSpec/MultipleExpectations
-        allow(Dir).to receive(:glob).with(File.join(output_dir, "page_*.png")).and_return(
-          ["#{output_dir}/page_1.png", "#{output_dir}/page_2.png"]
+        allow(Dir).to receive(:glob).with(File.join(output_dir, "page-*.png")).and_return(
+          ["#{output_dir}/page-1.png", "#{output_dir}/page-2.png"]
         )
 
         result = splitter.split
 
         expect(result[:folder_path]).to eq(output_dir)
         expect(result[:images_paths]).to include(
-          "#{output_dir}/page_1.png",
-          "#{output_dir}/page_2.png"
+          "#{output_dir}/page-1.png",
+          "#{output_dir}/page-2.png"
         )
       end
     end

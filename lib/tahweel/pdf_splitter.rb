@@ -4,6 +4,8 @@ require "fileutils"
 require "securerandom"
 require "tmpdir"
 
+require_relative "poppler_installer"
+
 module Tahweel
   # Handles the logic for splitting a PDF file into individual image pages.
   # Uses Poppler utils (pdftoppm, pdfinfo) for high-performance image processing.

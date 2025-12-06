@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
-require "google/apis/drive_v3"
-require "googleauth"
-require "googleauth/stores/file_token_store"
+require "fileutils"
 require "socket"
 require "uri"
+
+require "googleauth"
+require "googleauth/stores/file_token_store"
+require "google/apis/drive_v3"
 require "launchy"
-require "fileutils"
 require "xdg"
 
 module Tahweel

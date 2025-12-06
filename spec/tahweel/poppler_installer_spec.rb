@@ -17,6 +17,17 @@ RSpec.describe Tahweel::PopplerInstaller do
   end
 
   describe ".ensure_installed!" do
+    context "when already installed" do
+      it "returns immediately without installing or aborting" do
+        instance = instance_spy(described_class, installed?: true)
+        allow(described_class).to receive(:new).and_return(instance)
+
+        described_class.ensure_installed!
+
+        expect(instance).not_to have_received(:install)
+      end
+    end
+
     context "when on Windows" do
       before do
         allow(Gem).to receive(:win_platform?).and_return(true)
@@ -34,6 +45,8 @@ RSpec.describe Tahweel::PopplerInstaller do
       end
 
       it "aborts with instructions" do
+        instance = instance_double(described_class, installed?: false)
+        allow(described_class).to receive(:new).and_return(instance)
         expect { described_class.ensure_installed! }.to raise_error(SystemExit).and output(/install poppler/).to_stderr
       end
     end
@@ -279,9 +292,9 @@ RSpec.describe Tahweel::PopplerInstaller do
         before { allow(Gem).to receive(:win_platform?).and_return(true) }
 
         it "uses 'where'" do
-          allow(installer).to receive(:system).with("where test > NUL 2>&1")
+          allow(installer).to receive(:system).with("where test > #{File::NULL} 2>&1")
           installer.send(:command_exists?, "test")
-          expect(installer).to have_received(:system).with("where test > NUL 2>&1")
+          expect(installer).to have_received(:system).with("where test > #{File::NULL} 2>&1")
         end
       end
 
@@ -289,9 +302,9 @@ RSpec.describe Tahweel::PopplerInstaller do
         before { allow(Gem).to receive(:win_platform?).and_return(false) }
 
         it "uses 'which'" do
-          allow(installer).to receive(:system).with("which test > /dev/null 2>&1")
+          allow(installer).to receive(:system).with("which test > #{File::NULL} 2>&1")
           installer.send(:command_exists?, "test")
-          expect(installer).to have_received(:system).with("which test > /dev/null 2>&1")
+          expect(installer).to have_received(:system).with("which test > #{File::NULL} 2>&1")
         end
       end
     end

@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
+require "fileutils"
+
 require_relative "pdf_splitter"
 require_relative "ocr"
-require "fileutils"
 
 module Tahweel
   # Orchestrates the full conversion process:

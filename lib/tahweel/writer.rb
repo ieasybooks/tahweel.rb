@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require_relative "writers/txt"
 require_relative "writers/docx"
 require_relative "writers/json"
+require_relative "writers/txt"
 
 module Tahweel
   # Factory class for writing extracted text to different formats.

@@ -3,6 +3,13 @@
 require "etc"
 require "optparse"
 
+require_relative "../version"
+require_relative "../converter"
+require_relative "../ocr"
+require_relative "../writer"
+require_relative "../writers/txt"
+require_relative "file_collector"
+
 module Tahweel
   module CLI
     # Parses command-line arguments for the Tahweel CLI.
