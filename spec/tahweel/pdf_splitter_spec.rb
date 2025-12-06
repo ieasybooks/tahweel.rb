@@ -82,6 +82,31 @@ RSpec.describe Tahweel::PdfSplitter do
           "#{output_dir}/page-2.png"
         )
       end
+
+      it "processes pages concurrently using threads" do
+        allow(Thread).to receive(:new).and_call_original
+        allow(Etc).to receive(:nprocessors).and_return(4) # (4-2).clamp(2..) = 2 threads
+
+        splitter.split
+
+        # Expect 2 threads because we have 2 pages and concurrency is 2
+        expect(Thread).to have_received(:new).exactly(2).times
+      end
+    end
+
+    context "when a race condition occurs in the queue" do # rubocop:disable RSpec/MultipleMemoizedHelpers
+      let(:queue) { instance_double(Queue) }
+
+      before do
+        allow(Queue).to receive(:new).and_return(queue)
+        allow(queue).to receive(:<<)
+        # Force entry into loop then raise error
+        allow(queue).to receive(:pop).with(true).and_raise(ThreadError)
+      end
+
+      it "handles ThreadError gracefully and terminates the worker" do
+        expect { splitter.split }.not_to raise_error
+      end
     end
 
     context "when a block is given for progress" do
