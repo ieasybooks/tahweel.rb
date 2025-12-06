@@ -141,7 +141,7 @@ module Tahweel
     def result
       {
         folder_path: output_dir,
-        images_paths: Dir.glob(File.join(output_dir, "page_*.png")).sort!
+        images_paths: Dir.glob(File.join(output_dir, "page-*.png")).sort!
       }
     end
   end
