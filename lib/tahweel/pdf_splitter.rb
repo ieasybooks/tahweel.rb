@@ -131,8 +131,8 @@ module Tahweel
         "-r", dpi.to_s,
         "-f", (page_num + 1).to_s,
         "-l", (page_num + 1).to_s,
-        "\"#{pdf_path}\"",
-        "\"#{output_prefix}\""
+        pdf_path,
+        output_prefix
       )
     end
 
