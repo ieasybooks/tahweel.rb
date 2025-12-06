@@ -11,7 +11,7 @@ require "tahweel/cli/progress_renderer"
 begin
   soft, hard = Process.getrlimit(:NOFILE)
   Process.setrlimit(:NOFILE, [4096, hard].min) if soft < 4096
-rescue Exception
+rescue Exception # rubocop:disable Lint/RescueException
   if Gem.win_platform?
     puts "\e[33mWarning: Could not adjust file descriptor limit on Windows. Proceeding with default limits."
     puts "If you faced connection errors or the CLI froze, please report at https://github.com/ieasybooks/tahweel.rb/issues.\e[0m"

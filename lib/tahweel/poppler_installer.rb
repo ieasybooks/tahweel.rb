@@ -23,9 +23,12 @@ module Tahweel
     # On other platforms: Aborts with an error message if Poppler is missing.
     #
     # @raise [SystemExit] if Poppler is missing on non-Windows platforms.
-    def self.ensure_installed!
+    def self.ensure_installed! # rubocop:disable Metrics/MethodLength
+      installer = new
+      return if installer.installed?
+
       if Gem.win_platform?
-        new.install
+        installer.install
       else
         abort <<~MSG
           Error: Poppler utilities are not installed. Please install them:
