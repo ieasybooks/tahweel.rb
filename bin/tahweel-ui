@@ -293,4 +293,4 @@ class TahweelApp # rubocop:disable Metrics/ClassLength,Style/Documentation
   end
 end
 
-TahweelApp.launch
+TahweelApp.launch unless defined?(Ocran)
