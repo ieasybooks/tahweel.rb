@@ -60,10 +60,10 @@ module Tahweel
     # }
     # @return [Array<String>] An array containing the text of each page.
     def convert(&)
-      image_paths, temp_dir = PdfSplitter.split(@pdf_path, dpi: @dpi, &).values_at(:image_paths, :folder_path)
+      images_paths, temp_dir = PdfSplitter.split(@pdf_path, dpi: @dpi, &).values_at(:images_paths, :folder_path)
 
       begin
-        process_images(image_paths, Ocr.new(processor: @processor_type), &)
+        process_images(images_paths, Ocr.new(processor: @processor_type), &)
       ensure
         FileUtils.rm_rf(temp_dir)
       end
@@ -71,22 +71,22 @@ module Tahweel
 
     private
 
-    def process_images(image_paths, ocr_engine, &)
-      texts = Array.new(image_paths.size)
+    def process_images(images_paths, ocr_engine, &)
+      texts = Array.new(images_paths.size)
       mutex = Mutex.new
       processed_count = 0
 
-      run_workers(build_queue(image_paths), ocr_engine, texts, mutex) do
+      run_workers(build_queue(images_paths), ocr_engine, texts, mutex) do
         processed_count += 1
-        report_progress(processed_count, image_paths.size, &)
+        report_progress(processed_count, images_paths.size, &)
       end
 
       texts
     end
 
-    def build_queue(image_paths)
+    def build_queue(images_paths)
       queue = Queue.new
-      image_paths.each_with_index { |path, index| queue << [path, index] }
+      images_paths.each_with_index { |path, index| queue << [path, index] }
       queue
     end
 

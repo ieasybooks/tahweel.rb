@@ -8,8 +8,8 @@ RSpec.describe Tahweel::Converter do
 
   let(:pdf_path) { "test.pdf" }
   let(:temp_dir) { "/tmp/tahweel_test" }
-  let(:image_paths) { ["/tmp/tahweel_test/page_1.png", "/tmp/tahweel_test/page_2.png"] }
-  let(:split_result) { { folder_path: temp_dir, image_paths: image_paths } }
+  let(:images_paths) { ["/tmp/tahweel_test/page_1.png", "/tmp/tahweel_test/page_2.png"] }
+  let(:split_result) { { folder_path: temp_dir, images_paths: images_paths } }
   let(:ocr_engine) { instance_double(Tahweel::Ocr) }
 
   before do
@@ -18,8 +18,8 @@ RSpec.describe Tahweel::Converter do
 
     # Mock Ocr
     allow(Tahweel::Ocr).to receive(:new).with(processor: :google_drive).and_return(ocr_engine)
-    allow(ocr_engine).to receive(:extract).with(image_paths[0]).and_return("Page 1 Text")
-    allow(ocr_engine).to receive(:extract).with(image_paths[1]).and_return("Page 2 Text")
+    allow(ocr_engine).to receive(:extract).with(images_paths[0]).and_return("Page 1 Text")
+    allow(ocr_engine).to receive(:extract).with(images_paths[1]).and_return("Page 2 Text")
 
     # Mock FileUtils
     allow(FileUtils).to receive(:rm_rf)
@@ -54,8 +54,8 @@ RSpec.describe Tahweel::Converter do
       result = converter.convert
 
       expect(Tahweel::PdfSplitter).to have_received(:split).with(pdf_path, dpi: 150)
-      expect(ocr_engine).to have_received(:extract).with(image_paths[0])
-      expect(ocr_engine).to have_received(:extract).with(image_paths[1])
+      expect(ocr_engine).to have_received(:extract).with(images_paths[0])
+      expect(ocr_engine).to have_received(:extract).with(images_paths[1])
       expect(FileUtils).to have_received(:rm_rf).with(temp_dir)
       expect(result).to eq(["Page 1 Text", "Page 2 Text"])
     end
