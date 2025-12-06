@@ -183,7 +183,7 @@ class TahweelApp # rubocop:disable Metrics/ClassLength,Style/Documentation
   def reset_file_progress(index, total_files)
     Glimmer::LibUI.queue_main do
       @global_progress.value = ((index.to_f / total_files) * 100).to_i
-      @global_progress_label.text = "#{t(:global_progress)} (#{index + 1}/#{total_files})"
+      @global_progress_label.text = "#{t(:global_progress)} (#{index}/#{total_files})"
       @file_progress.value = 0
       @file_progress_label.text = "#{t(:file_progress)} #{t(:stage_preparing)}"
     end
