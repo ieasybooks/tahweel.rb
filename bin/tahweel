@@ -32,7 +32,7 @@ begin
     exit 0
   end
 
-  Tahweel::Authorizer.authorize if options[:file_concurrency] > 1 && options[:processor] == :google_drive
+  Tahweel::Authorizer.authorize if options[:processor] == :google_drive
 
   base_path = File.directory?(input_path) ? input_path : File.dirname(input_path)
 

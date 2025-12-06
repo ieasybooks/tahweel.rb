@@ -9,6 +9,8 @@ require "glimmer-dsl-libui"
 require "launchy"
 require "tahweel"
 
+Tahweel::Authorizer.authorize
+
 class TahweelApp # rubocop:disable Metrics/ClassLength,Style/Documentation
   include Glimmer::LibUI::Application
 
