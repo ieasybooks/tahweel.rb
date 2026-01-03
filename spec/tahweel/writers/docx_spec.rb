@@ -17,59 +17,82 @@ RSpec.describe Tahweel::Writers::Docx do
   end
 
   describe "#write" do
-    it "creates a new Caracal document and saves it with cleaned text" do # rubocop:disable RSpec/ExampleLength,RSpec/MultipleExpectations
-      mock_docx = double("CaracalDocument") # rubocop:disable RSpec/VerifiedDoubles
-      allow(Caracal::Document).to receive(:save).and_yield(mock_docx)
-      allow(mock_docx).to receive(:p)
-      allow(mock_docx).to receive(:page)
+    let(:mock_docx) { double("CaracalDocument") } # rubocop:disable RSpec/VerifiedDoubles
+    let(:mock_paragraph) { double("ParagraphModel") } # rubocop:disable RSpec/VerifiedDoubles
+    let(:paragraph_calls) { [] }
 
+    before do
+      allow(Caracal::Document).to receive(:save).and_yield(mock_docx)
+      allow(mock_docx).to receive(:p) do |options, &block|
+        paragraph_calls << { options: options }
+        # Simulate Caracal's instance_eval behavior
+        mock_paragraph.instance_eval(&block) if block
+      end
+      allow(mock_docx).to receive(:page)
+      allow(mock_paragraph).to receive(:text) { |content, _opts|
+        paragraph_calls.last[:texts] ||= []
+        paragraph_calls.last[:texts] << content
+      }
+      allow(mock_paragraph).to receive(:br) {
+        paragraph_calls.last[:br_count] ||= 0
+        paragraph_calls.last[:br_count] += 1
+      }
+    end
+
+    it "creates a new Caracal document and saves it" do # rubocop:disable RSpec/ExampleLength,RSpec/MultipleExpectations
       dirty_texts = ["Page  1   content", "Page\r\n\r\n2\t\tcontent"]
       writer.write(dirty_texts, destination)
 
       expect(Caracal::Document).to have_received(:save).with(destination)
-
-      expect(mock_docx).to have_received(:p).with("Page 1 content", hash_including(align: :left))
-      expect(mock_docx).to have_received(:p).with("Page\n2\tcontent", hash_including(align: :left))
+      expect(paragraph_calls.size).to eq(2)
+      expect(paragraph_calls[0][:options]).to include(align: :left)
+      expect(paragraph_calls[1][:options]).to include(align: :left)
 
       # It should add a page break after each text block EXCEPT the last one
       expect(mock_docx).to have_received(:page).exactly(dirty_texts.size - 1).times
     end
 
-    it "aligns arabic text to the right" do # rubocop:disable RSpec/ExampleLength
-      mock_docx = double("CaracalDocument") # rubocop:disable RSpec/VerifiedDoubles
-      allow(Caracal::Document).to receive(:save).and_yield(mock_docx)
-      allow(mock_docx).to receive(:p)
-      allow(mock_docx).to receive(:page)
+    it "uses proper OOXML line breaks via br method for multi-line text" do # rubocop:disable RSpec/MultipleExpectations
+      multi_line_text = "Line 1\nLine 2\nLine 3"
+      writer.write([multi_line_text], destination)
 
+      # Should call text for each line
+      expect(paragraph_calls.first[:texts]).to eq(["Line 1", "Line 2", "Line 3"])
+
+      # Should call br between lines (n-1 times for n lines)
+      expect(paragraph_calls.first[:br_count]).to eq(2)
+    end
+
+    it "normalizes various line ending formats to proper breaks" do
+      # Test \r\n (Windows) and \r (old Mac) - consecutive newlines are collapsed
+      mixed_endings = "Line 1\r\nLine 2\rLine 3"
+      writer.write([mixed_endings], destination)
+
+      expect(paragraph_calls.first[:texts]).to eq(["Line 1", "Line 2", "Line 3"])
+    end
+
+    it "aligns arabic text to the right" do
       arabic_text = "مرحبا بكم"
       writer.write([arabic_text], destination)
 
-      expect(mock_docx).to have_received(:p).with(arabic_text, hash_including(align: :right))
+      expect(paragraph_calls.first[:options]).to include(align: :right)
     end
 
-    it "aligns mixed text based on majority characters" do # rubocop:disable RSpec/ExampleLength,RSpec/MultipleExpectations
-      mock_docx = double("CaracalDocument") # rubocop:disable RSpec/VerifiedDoubles
-      allow(Caracal::Document).to receive(:save).and_yield(mock_docx)
-      allow(mock_docx).to receive(:p)
-      allow(mock_docx).to receive(:page)
-
+    it "aligns mixed text based on majority characters" do # rubocop:disable RSpec/MultipleExpectations,RSpec/ExampleLength
       # More Arabic chars
       mixed_arabic = "مرحبا hello"
       writer.write([mixed_arabic], destination)
-      expect(mock_docx).to have_received(:p).with(mixed_arabic, hash_including(align: :right))
+      expect(paragraph_calls.first[:options]).to include(align: :right)
+
+      paragraph_calls.clear
 
       # More Latin chars
       mixed_english = "hello مرحب"
       writer.write([mixed_english], destination)
-      expect(mock_docx).to have_received(:p).with(mixed_english, hash_including(align: :left))
+      expect(paragraph_calls.first[:options]).to include(align: :left)
     end
 
-    it "merges short lines to fit within page limits" do # rubocop:disable RSpec/ExampleLength,RSpec/MultipleExpectations
-      mock_docx = double("CaracalDocument") # rubocop:disable RSpec/VerifiedDoubles
-      allow(Caracal::Document).to receive(:save).and_yield(mock_docx)
-      allow(mock_docx).to receive(:p)
-      allow(mock_docx).to receive(:page)
-
+    it "merges short lines to fit within page limits" do
       # Construct a text that would trigger merging (many short lines)
       # We need enough lines so that expected_lines_in_page > 40
       # 45 lines of "a"
@@ -77,50 +100,37 @@ RSpec.describe Tahweel::Writers::Docx do
 
       writer.write([many_short_lines], destination)
 
-      # We expect the text passed to docx.p to have fewer lines than the original
-      # because compact_shortest_lines should have been called repeatedly
-      expect(mock_docx).to have_received(:p) do |text, _options|
-        expect(text.count("\n")).to be < 41
-      end
+      # After compaction, we should have fewer br calls than original line count - 1
+      # Original would be 44 br calls (45 lines - 1)
+      # After compaction to <= 40 lines, should be < 40 br calls
+      expect(paragraph_calls.first[:br_count]).to be < 40
     end
 
-    it "merges lines with minimum combined length" do # rubocop:disable RSpec/ExampleLength,RSpec/MultipleExpectations
-      mock_docx = double("CaracalDocument") # rubocop:disable RSpec/VerifiedDoubles
-      allow(Caracal::Document).to receive(:save).and_yield(mock_docx)
-      allow(mock_docx).to receive(:p)
-      allow(mock_docx).to receive(:page)
-
+    it "merges lines with minimum combined length" do # rubocop:disable RSpec/MultipleExpectations
       # Lines with lengths: 5, 3, 14, 1
       # Sums: (5+3)=8, (3+14)=17, (14+1)=15
-      # Minimum is 8 (lines 1 and 2)
+      # Minimum is 8 (lines 1 and 2), so they get merged
       text = "aaaaa\nbbb\ncccccccccccccc\nd"
 
       # Force expected_lines_in_page to return > 40 so merge runs once
-      # We can do this by stubbing the method on the instance
       allow(writer).to receive(:expected_lines_in_page).and_return(41, 0) # rubocop:disable RSpec/SubjectStub
 
       writer.write([text], destination)
 
-      expect(mock_docx).to have_received(:p) do |merged_text, _options|
-        # Expect lines 1 and 2 merged: "aaaaa bbb"
-        expected = "aaaaa bbb\ncccccccccccccc\nd"
-        expect(merged_text).to eq(expected)
-      end
+      # After merge, should have: "aaaaa bbb", "cccccccccccccc", "d"
+      expect(paragraph_calls.first[:texts]).to eq(["aaaaa bbb", "cccccccccccccc", "d"])
+      expect(paragraph_calls.first[:br_count]).to eq(2)
     end
 
-    it "does not merge lines if there are fewer than 2 lines" do # rubocop:disable RSpec/ExampleLength
-      mock_docx = double("CaracalDocument") # rubocop:disable RSpec/VerifiedDoubles
-      allow(Caracal::Document).to receive(:save).and_yield(mock_docx)
-      allow(mock_docx).to receive(:p)
-      allow(mock_docx).to receive(:page)
-
+    it "does not merge lines if there are fewer than 2 lines" do # rubocop:disable RSpec/MultipleExpectations
       # Force expected_lines_in_page to trigger the loop, but compact_shortest_lines should return immediately
       allow(writer).to receive(:expected_lines_in_page).and_return(41, 0) # rubocop:disable RSpec/SubjectStub
 
       single_line_text = "Just one line"
       writer.write([single_line_text], destination)
 
-      expect(mock_docx).to have_received(:p).with(single_line_text, anything)
+      expect(paragraph_calls.first[:texts]).to eq([single_line_text])
+      expect(paragraph_calls.first[:br_count]).to be_nil
     end
   end
 end

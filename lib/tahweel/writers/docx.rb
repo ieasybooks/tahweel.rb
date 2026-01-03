@@ -14,10 +14,11 @@ module Tahweel
       # Writes the extracted texts to a file.
       #
       # It applies several transformations to the text before writing:
-      # 1. Normalizes line endings to `\n`.
+      # 1. Normalizes all line endings (`\r\n`, `\r`) to `\n`.
       # 2. Collapses consecutive identical whitespace characters.
       # 3. Compacts the text by merging short lines if the page is too long (> 40 lines).
       # 4. Determines text alignment (RTL/LTR) based on content.
+      # 5. Converts `\n` to proper OOXML line breaks for cross-platform compatibility.
       #
       # @param texts [Array<String>] The extracted texts (one per page).
       # @param destination [String] The output file path.
@@ -26,10 +27,10 @@ module Tahweel
       def write(texts, destination, options = {}) # rubocop:disable Lint/UnusedMethodArgument
         Caracal::Document.save(destination) do |docx|
           texts.each_with_index do |text, index|
-            text = text.gsub(/(\r\n)+/, "\n").gsub(/(\s)\1+/, '\1').strip
+            text = text.gsub(/\r\n?/, "\n").gsub(/(\s)\1+/, '\1').strip
             text = compact_shortest_lines(text) while expected_lines_in_page(text) > 40
 
-            docx.p text, size: 20, align: alignment_for(text)
+            write_paragraph(docx, text)
 
             docx.page if index < texts.size - 1
           end
@@ -37,6 +38,28 @@ module Tahweel
       end
 
       private
+
+      # Writes a paragraph with proper OOXML line breaks.
+      #
+      # Raw newline characters (\n, \r\n) are not valid line breaks in DOCX format.
+      # Microsoft Word on Windows requires proper <w:br/> elements for line breaks,
+      # while macOS Pages is more lenient. This method uses Caracal's `br` method
+      # to insert cross-platform compatible line breaks.
+      #
+      # @param docx [Caracal::Document] The document to write to.
+      # @param text [String] The text content with newlines.
+      # @return [void]
+      def write_paragraph(docx, text)
+        lines = text.split("\n")
+        alignment = alignment_for(text)
+
+        docx.p align: alignment do
+          lines.each_with_index do |line, line_index|
+            text line, size: 20
+            br if line_index < lines.size - 1
+          end
+        end
+      end
 
       # Determines the text alignment based on the ratio of Arabic to non-Arabic characters.
       #
