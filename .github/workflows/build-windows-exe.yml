@@ -1,0 +1,35 @@
+name: Build Windows EXE
+
+on:
+  release:
+    types: [published]
+  
+  workflow_dispatch:
+
+jobs:
+  build-windows-exe:
+    name: Build Windows EXE
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.4.7
+          bundler-cache: true
+      - name: Install dependencies
+        run: bundle add ocran
+      - name: Get version
+        id: version
+        run: |
+          $version = (Get-Content lib/tahweel/version.rb | Select-String -Pattern 'VERSION = "([^"]+)"').Matches.Groups[1].Value
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+      - name: Build Windows EXE
+        run: bundle exec ocran bin/tahweel-ui --gem-all --icon assets/windows/tahweel.ico --output tahweel-${{ steps.version.outputs.VERSION }}.exe
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tahweel-${{ steps.version.outputs.VERSION }}
+          path: tahweel-${{ steps.version.outputs.VERSION }}.exe
