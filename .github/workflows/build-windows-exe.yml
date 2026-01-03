@@ -1,0 +1,48 @@
+name: Build Windows EXE
+
+on:
+  release:
+    types: [published]
+  
+  workflow_dispatch:
+
+jobs:
+  build-windows-exe:
+    name: Build Windows EXE
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.4.7
+          bundler-cache: true
+      - name: Install ocran + dependencies
+        run: |
+          gem install ocran
+          gem install webrick
+          bundle install
+      - name: Build + install this gem into Ruby
+        run: |
+          gem build tahweel.gemspec
+          gem install ./tahweel-*.gem
+      - name: Get version
+        id: version
+        run: |
+          $version = (Get-Content lib/tahweel/version.rb | Select-String -Pattern 'VERSION = "([^"]+)"').Matches.Groups[1].Value
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+      - name: Build Windows EXE
+        continue-on-error: true
+        run: ocran bin/tahweel-ui lib/tahweel/templates/success.html --add-all-core --gem-full --icon assets/windows/tahweel.ico --output Tahweel-${{ steps.version.outputs.VERSION }}.exe
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tahweel-${{ steps.version.outputs.VERSION }}
+          path: Tahweel-${{ steps.version.outputs.VERSION }}.exe
+      - name: Upload to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Tahweel-${{ steps.version.outputs.VERSION }}.exe
