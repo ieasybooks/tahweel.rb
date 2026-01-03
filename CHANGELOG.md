@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## [0.1.2] - 2026-01-03
+
+### Changed
+
+- Normalize line endings in DOCX writer to proper OOXML line breaks
+
 ## [0.1.1] - 2025-12-03
 
 ### Changed
