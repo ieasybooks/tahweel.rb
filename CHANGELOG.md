@@ -5,6 +5,7 @@
 ### Changed
 
 - Normalize line endings in DOCX writer to proper OOXML line breaks
+- Add Windows EXE build workflow
 
 ## [0.1.1] - 2025-12-03
 
