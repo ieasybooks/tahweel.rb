@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحويل - Tahweel | PDF OCR Tool</title>
+    <title>تحويل | أداة تحويل PDF إلى نص</title>
     <meta name="description" content="Convert PDF and image files to text using Google Drive OCR. Supports TXT, DOCX, and JSON output formats.">
     
     <!-- Favicon -->
@@ -644,6 +644,7 @@
       const content = {
         ar: {
           btn: "English",
+          pageTitle: "تحويل | أداة تحويل PDF إلى نص",
           heroTagline: "أداة قوية لتحويل ملفات PDF والصور إلى نصوص باستخدام Google Drive OCR",
           downloadText: "تحميل للويندوز",
           videosTitle: "شاهد تحويل وهو يعمل",
@@ -673,6 +674,7 @@
         },
         en: {
           btn: "العربية",
+          pageTitle: "Tahweel | PDF to Text OCR Tool",
           heroTagline: "A powerful tool to convert PDF and image files to text using Google Drive OCR",
           downloadText: "Download for Windows",
           videosTitle: "Watch Tahweel in Action",
@@ -715,6 +717,9 @@
         
         // Toggle Font Class
         document.body.classList.toggle('font-en', currentLang === 'en');
+        
+        // Update page title
+        document.title = c.pageTitle;
         
         // Update all text content
         document.getElementById('btnText').textContent = c.btn;
