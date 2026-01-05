@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحويل - Tahweel | PDF OCR Tool</title>
+    <meta name="description" content="Convert PDF and image files to text using Google Drive OCR. Supports TXT, DOCX, and JSON output formats.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    
+    <!-- Google Fonts: Poppins for English, Cairo for Arabic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+      :root {
+        --primary-color: #10b981;
+        --primary-hover: #059669;
+        --primary-light: #d1fae5;
+        --accent-blue: #3b82f6;
+        --accent-gold: #f59e0b;
+        --bg-gradient: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #d1fae5 100%);
+        --text-dark: #1f2937;
+        --text-light: #6b7280;
+        --text-muted: #9ca3af;
+        --card-bg: rgba(255, 255, 255, 0.95);
+        --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        --card-shadow-hover: 0 20px 40px -10px rgba(16, 185, 129, 0.2), 0 15px 20px -10px rgba(0, 0, 0, 0.1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        background: #ecfdf5; /* Fallback for overscroll */
+      }
+
+      body {
+        min-height: 100vh;
+        font-family: 'Cairo', sans-serif;
+        color: var(--text-dark);
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      body.font-en {
+        font-family: 'Poppins', sans-serif;
+      }
+
+      /* Extended gradient background that covers overscroll */
+      body::before {
+        content: '';
+        position: fixed;
+        /* Extend beyond viewport for overscroll */
+        top: -50vh;
+        left: 0;
+        width: 100%;
+        height: 200vh;
+        background: linear-gradient(135deg, 
+          #e6f7ed 0%,      /* Extended top */
+          #f0fdf4 20%,     /* Original gradient start */
+          #ecfdf5 50%,
+          #d1fae5 80%,     /* Original gradient end */
+          #c6f6d5 100%     /* Extended bottom */
+        );
+        pointer-events: none;
+        z-index: -2;
+      }
+
+      /* Background Pattern */
+      body::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+          radial-gradient(circle at 20% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(245, 158, 11, 0.04) 0%, transparent 40%);
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      /* Language Toggle */
+      .lang-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-family: inherit;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 1000;
+      }
+
+      html[dir="ltr"] .lang-btn {
+        right: auto;
+        left: 20px;
+        font-family: 'Cairo', sans-serif; /* Keep Arabic font for العربية button */
+      }
+
+      .lang-btn:hover {
+        background: #f9fafb;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+      }
+
+      /* Container */
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Hero Section */
+      .hero {
+        padding: 100px 0 60px;
+        text-align: center;
+      }
+
+      .logo {
+        width: 200px;
+        height: auto;
+        margin-bottom: 30px;
+        animation: float 3s ease-in-out infinite;
+        mix-blend-mode: multiply; /* Remove white background */
+      }
+
+      @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+      }
+
+      .hero h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--text-dark);
+        margin-bottom: 15px;
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-blue));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .hero .tagline {
+        font-size: 1.25rem;
+        color: var(--text-light);
+        max-width: 600px;
+        margin: 0 auto 40px;
+      }
+
+      /* Buttons */
+      .btn-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px 30px;
+        border-radius: 50px;
+        font-family: inherit;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+        color: white;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+      }
+
+      .btn-secondary {
+        background: white;
+        color: var(--text-dark);
+        border: 2px solid #e5e7eb;
+      }
+
+      .btn-secondary:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        transform: translateY(-3px);
+      }
+
+      .btn svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      /* Section Styling */
+      section {
+        padding: 80px 0;
+      }
+
+      .section-title {
+        text-align: center;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 15px;
+      }
+
+      .section-subtitle {
+        text-align: center;
+        font-size: 1.1rem;
+        color: var(--text-light);
+        margin-bottom: 50px;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      /* Video Section */
+      .videos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      .video-card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.5);
+      }
+
+      .video-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--card-shadow-hover);
+      }
+
+      .video-wrapper {
+        position: relative;
+        padding-bottom: 56.25%;
+        height: 0;
+        background: #000;
+      }
+
+      .video-wrapper iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      .video-card h3 {
+        padding: 20px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-align: center;
+        color: var(--text-dark);
+      }
+
+      /* Features Section */
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+      }
+
+      .feature-card {
+        background: var(--card-bg);
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.5);
+        text-align: center;
+      }
+
+      .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--card-shadow-hover);
+      }
+
+      .feature-icon {
+        width: 60px;
+        height: 60px;
+        background: var(--primary-light);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 28px;
+      }
+
+      .feature-card h3 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: var(--text-dark);
+      }
+
+      .feature-card p {
+        font-size: 0.95rem;
+        color: var(--text-light);
+      }
+
+      /* Documentation Section */
+      .docs-section {
+        background: rgba(255,255,255,0.5);
+        border-radius: 30px;
+        padding: 50px;
+        max-width: 900px;
+        margin: 0 auto;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.8);
+      }
+
+      .docs-section h2 {
+        margin-bottom: 30px;
+      }
+
+      .code-block {
+        background: #1f2937;
+        color: #f9fafb;
+        padding: 20px 25px;
+        border-radius: 12px;
+        font-family: 'Fira Code', 'Monaco', monospace;
+        font-size: 0.9rem;
+        overflow-x: auto;
+        margin: 20px 0;
+        direction: ltr;
+        text-align: left;
+      }
+
+      .code-block code {
+        color: #a5f3fc;
+      }
+
+      .code-block .comment {
+        color: #6b7280;
+      }
+
+      .code-block .cmd {
+        color: #34d399;
+      }
+
+      .docs-list {
+        list-style: none;
+        padding: 0;
+      }
+
+      .docs-list li {
+        padding: 12px 0;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .docs-list li:last-child {
+        border-bottom: none;
+      }
+
+      .docs-list .icon {
+        color: var(--primary-color);
+        font-size: 1.2rem;
+        margin-top: 2px;
+      }
+
+      .docs-list strong {
+        color: var(--text-dark);
+      }
+
+      /* Footer */
+      footer {
+        padding: 40px 0;
+        text-align: center;
+        color: var(--text-light);
+        font-size: 0.9rem;
+      }
+
+      footer a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+      }
+
+      footer a:hover {
+        color: var(--primary-hover);
+      }
+
+      .footer-links {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin-bottom: 20px;
+      }
+
+      .footer-links a {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* Animations */
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .animate-in {
+        animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        opacity: 0;
+      }
+
+      .delay-1 { animation-delay: 0.1s; }
+      .delay-2 { animation-delay: 0.2s; }
+      .delay-3 { animation-delay: 0.3s; }
+      .delay-4 { animation-delay: 0.4s; }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .hero { padding: 80px 0 40px; }
+        .hero h1 { font-size: 2rem; }
+        .hero .tagline { font-size: 1rem; }
+        .logo { width: 150px; }
+        .btn { padding: 12px 24px; font-size: 0.9rem; }
+        section { padding: 50px 0; }
+        .section-title { font-size: 1.6rem; }
+        .docs-section { padding: 30px 20px; }
+        .lang-btn { padding: 8px 16px; font-size: 0.8rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Language Toggle -->
+    <button class="lang-btn" onclick="toggleLanguage()" id="langBtn">
+      <span>🌐</span> <span id="btnText">English</span>
+    </button>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="container">
+        <img src="logo.png" alt="Tahweel Logo" class="logo animate-in">
+        <p class="tagline animate-in delay-2" id="heroTagline">
+          أداة قوية لتحويل ملفات PDF والصور إلى نصوص باستخدام Google Drive OCR
+        </p>
+        <div class="btn-group animate-in delay-3">
+          <a href="https://github.com/ieasybooks/tahweel.rb/releases/latest" class="btn btn-primary" id="downloadBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span id="downloadText">تحميل للويندوز</span>
+          </a>
+          <a href="https://github.com/ieasybooks/tahweel.rb" class="btn btn-secondary" target="_blank">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+            GitHub
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Videos Section -->
+    <section id="videos">
+      <div class="container">
+        <h2 class="section-title" id="videosTitle">شاهد تحويل وهو يعمل</h2>
+        <p class="section-subtitle" id="videosSubtitle">
+          تعرف على كيفية استخدام تحويل من خلال هذه الفيديوهات التوضيحية
+        </p>
+        <div class="videos-grid">
+          <div class="video-card">
+            <div class="video-wrapper">
+              <!-- TODO: Add video URL -->
+              <iframe 
+                src=""
+                title="Desktop App Preview"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+              </iframe>
+            </div>
+            <h3 id="video1Title">عرض تطبيق سطح المكتب</h3>
+          </div>
+          <div class="video-card">
+            <div class="video-wrapper">
+              <!-- TODO: Add video URL -->
+              <iframe 
+                src="" 
+                title="CLI Usage Preview"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+              </iframe>
+            </div>
+            <h3 id="video2Title">استخدام سطر الأوامر</h3>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features">
+      <div class="container">
+        <h2 class="section-title" id="featuresTitle">المميزات</h2>
+        <p class="section-subtitle" id="featuresSubtitle">
+          أداة قوية لتحويل المستندات بكفاءة عالية
+        </p>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">📄</div>
+            <h3 id="feature1Title">تعدد الصيغ</h3>
+            <p id="feature1Desc">دعم ملفات PDF والصور (JPG و JPEG و PNG) مع دعم مخرجات بصيغ TXT و DOCX و JSON</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3 id="feature2Title">معالجة متوازية</h3>
+            <p id="feature2Desc">معالجة متوازية للملفات والصفحات لأداء فائق السرعة</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🔤</div>
+            <h3 id="feature3Title">دعم العربية</h3>
+            <p id="feature3Desc">محاذاة تلقائية من اليمين لليسار عند اكتشاف النصوص العربية</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3 id="feature4Title">تتبع التقدم</h3>
+            <p id="feature4Desc">واجهة طرفية ملونة تعرض حالة كل ملف ونسبة الإنجاز</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📁</div>
+            <h3 id="feature5Title">معالجة المجلدات</h3>
+            <p id="feature5Desc">اكتشاف تلقائي للملفات مع الحفاظ على بنية المجلدات</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🔄</div>
+            <h3 id="feature6Title">إعادة المحاولة</h3>
+            <p id="feature6Desc">آلية ذكية للتعامل مع أخطاء API وحدود الاستخدام</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Documentation Section -->
+    <section id="docs">
+      <div class="container">
+        <div class="docs-section">
+          <h2 class="section-title" id="docsTitle">الاستخدام للمبرمجين</h2>
+          <p class="section-subtitle" id="docsSubtitle">
+            ابدأ باستخدام تحويل في دقائق معدودة
+          </p>
+
+          <h3 id="installTitle" style="margin-top: 30px; margin-bottom: 15px;">التثبيت</h3>
+          <div class="code-block">
+            <span class="comment"># Install via RubyGems</span><br>
+            <span class="cmd">gem</span> install tahweel
+          </div>
+
+          <h3 id="usageTitle" style="margin-top: 30px; margin-bottom: 15px;">الاستخدام</h3>
+          <div class="code-block">
+            <span class="comment"># Convert a single PDF file</span><br>
+            <span class="cmd">tahweel</span> document.pdf<br><br>
+            <span class="comment"># Convert all PDFs in a directory</span><br>
+            <span class="cmd">tahweel</span> ./documents/<br><br>
+            <span class="comment"># Specify output formats</span><br>
+            <span class="cmd">tahweel</span> document.pdf -f txt,docx,json<br><br>
+            <span class="comment"># Set output directory</span><br>
+            <span class="cmd">tahweel</span> ./documents/ -o ./output/
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container">
+        <div class="footer-links">
+          <a href="https://github.com/ieasybooks/tahweel.rb" target="_blank">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+            GitHub
+          </a>
+          <a href="https://github.com/ieasybooks/tahweel.rb/releases" target="_blank" id="releasesLink">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span id="releasesText">الإصدارات</span>
+          </a>
+          <a href="https://ieasybooks.com" target="_blank">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            iEasyBooks
+          </a>
+        </div>
+        <p id="footerText">
+          صُنع بـ ❤️ بواسطة <a href="https://ieasybooks.com" target="_blank">iEasyBooks</a>
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      // Content Dictionary
+      const content = {
+        ar: {
+          btn: "English",
+          heroTagline: "أداة قوية لتحويل ملفات PDF والصور إلى نصوص باستخدام Google Drive OCR",
+          downloadText: "تحميل للويندوز",
+          videosTitle: "شاهد تحويل وهو يعمل",
+          videosSubtitle: "تعرف على كيفية استخدام تحويل من خلال هذه الفيديوهات التوضيحية",
+          video1Title: "عرض تطبيق سطح المكتب",
+          video2Title: "استخدام سطر الأوامر",
+          featuresTitle: "المميزات",
+          featuresSubtitle: "أداة قوية لتحويل المستندات بكفاءة عالية",
+          feature1Title: "تعدد الصيغ",
+          feature1Desc: "دعم ملفات PDF والصور (JPG و JPEG و PNG) مع دعم مخرجات بصيغ TXT و DOCX و JSON",
+          feature2Title: "معالجة متوازية",
+          feature2Desc: "معالجة متوازية للملفات والصفحات لأداء فائق السرعة",
+          feature3Title: "دعم العربية",
+          feature3Desc: "محاذاة تلقائية من اليمين لليسار عند اكتشاف النصوص العربية",
+          feature4Title: "تتبع التقدم",
+          feature4Desc: "واجهة طرفية ملونة تعرض حالة كل ملف ونسبة الإنجاز",
+          feature5Title: "معالجة المجلدات",
+          feature5Desc: "اكتشاف تلقائي للملفات مع الحفاظ على بنية المجلدات",
+          feature6Title: "إعادة المحاولة",
+          feature6Desc: "آلية ذكية للتعامل مع أخطاء API وحدود الاستخدام",
+          docsTitle: "الاستخدام للمبرمجين",
+          docsSubtitle: "ابدأ باستخدام تحويل في دقائق معدودة",
+          installTitle: "التثبيت",
+          usageTitle: "الاستخدام",
+          releasesText: "الإصدارات",
+          footerText: "صُنع بـ ❤️ بواسطة"
+        },
+        en: {
+          btn: "العربية",
+          heroTagline: "A powerful tool to convert PDF and image files to text using Google Drive OCR",
+          downloadText: "Download for Windows",
+          videosTitle: "Watch Tahweel in Action",
+          videosSubtitle: "Learn how to use Tahweel through these tutorial videos",
+          video1Title: "Desktop App Preview",
+          video2Title: "CLI Usage Preview",
+          featuresTitle: "Features",
+          featuresSubtitle: "A powerful tool for efficient document conversion",
+          feature1Title: "Multiple Formats",
+          feature1Desc: "Support for PDF and images (JPG, JPEG, PNG) with TXT, DOCX, JSON output",
+          feature2Title: "Parallel Processing",
+          feature2Desc: "Parallel processing of files and pages for blazing speed",
+          feature3Title: "Arabic Support",
+          feature3Desc: "Automatic right-to-left alignment when Arabic text is detected",
+          feature4Title: "Progress Tracking",
+          feature4Desc: "Colored terminal UI showing each file's status and completion percentage",
+          feature5Title: "Directory Processing",
+          feature5Desc: "Automatic file discovery with directory structure preservation",
+          feature6Title: "Smart Retry",
+          feature6Desc: "Intelligent handling of API errors and rate limits",
+          docsTitle: "For Developers",
+          docsSubtitle: "Get started with Tahweel in minutes",
+          installTitle: "Installation",
+          usageTitle: "Usage",
+          releasesText: "Releases",
+          footerText: "Made with ❤️ by"
+        }
+      };
+      
+      let currentLang = 'ar';
+      
+      function toggleLanguage() {
+        currentLang = currentLang === 'ar' ? 'en' : 'ar';
+        const c = content[currentLang];
+        
+        // Toggle Direction and Lang Attribute
+        const htmlEl = document.documentElement;
+        htmlEl.lang = currentLang;
+        htmlEl.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+        
+        // Toggle Font Class
+        document.body.classList.toggle('font-en', currentLang === 'en');
+        
+        // Update all text content
+        document.getElementById('btnText').textContent = c.btn;
+        document.getElementById('heroTagline').textContent = c.heroTagline;
+        document.getElementById('downloadText').textContent = c.downloadText;
+        document.getElementById('videosTitle').textContent = c.videosTitle;
+        document.getElementById('videosSubtitle').textContent = c.videosSubtitle;
+        document.getElementById('video1Title').textContent = c.video1Title;
+        document.getElementById('video2Title').textContent = c.video2Title;
+        document.getElementById('featuresTitle').textContent = c.featuresTitle;
+        document.getElementById('featuresSubtitle').textContent = c.featuresSubtitle;
+        document.getElementById('feature1Title').textContent = c.feature1Title;
+        document.getElementById('feature1Desc').textContent = c.feature1Desc;
+        document.getElementById('feature2Title').textContent = c.feature2Title;
+        document.getElementById('feature2Desc').textContent = c.feature2Desc;
+        document.getElementById('feature3Title').textContent = c.feature3Title;
+        document.getElementById('feature3Desc').textContent = c.feature3Desc;
+        document.getElementById('feature4Title').textContent = c.feature4Title;
+        document.getElementById('feature4Desc').textContent = c.feature4Desc;
+        document.getElementById('feature5Title').textContent = c.feature5Title;
+        document.getElementById('feature5Desc').textContent = c.feature5Desc;
+        document.getElementById('feature6Title').textContent = c.feature6Title;
+        document.getElementById('feature6Desc').textContent = c.feature6Desc;
+        document.getElementById('docsTitle').textContent = c.docsTitle;
+        document.getElementById('docsSubtitle').textContent = c.docsSubtitle;
+        document.getElementById('installTitle').textContent = c.installTitle;
+        document.getElementById('usageTitle').textContent = c.usageTitle;
+        document.getElementById('releasesText').textContent = c.releasesText;
+        document.getElementById('footerText').innerHTML = c.footerText + ' <a href="https://ieasybooks.com" target="_blank">iEasyBooks</a>';
+      }
+
+      // Fetch latest release EXE download URL from GitHub API
+      async function fetchLatestRelease() {
+        try {
+          const response = await fetch('https://api.github.com/repos/ieasybooks/tahweel.rb/releases/latest');
+          const release = await response.json();
+          
+          // Find the .exe asset
+          const exeAsset = release.assets.find(asset => asset.name.endsWith('.exe'));
+          
+          if (exeAsset) {
+            const downloadBtn = document.getElementById('downloadBtn');
+            downloadBtn.href = exeAsset.browser_download_url;
+          }
+        } catch (error) {
+          console.log('Could not fetch latest release, using fallback URL');
+        }
+      }
+
+      // Fetch release on page load
+      fetchLatestRelease();
+
+      // Smooth scroll for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          document.querySelector(this.getAttribute('href')).scrollIntoView({
+            behavior: 'smooth'
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
