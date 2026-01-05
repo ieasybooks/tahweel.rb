@@ -158,16 +158,16 @@ tahweel /path/to/documents/
 <p dir="rtl">تحديد صيغ الإخراج (الافتراضي: <code dir="ltr">txt,docx</code>):</p>
 
 ```bash
-# نص فقط
+# Text only
 tahweel document.pdf -f txt
 
-# DOCX فقط
+# DOCX only
 tahweel document.pdf -f docx
 
-# JSON فقط
+# JSON only
 tahweel document.pdf -f json
 
-# صيغ متعددة
+# Multiple formats
 tahweel document.pdf -f txt,docx,json
 ```
 
@@ -180,20 +180,20 @@ tahweel document.pdf -o /path/to/output/
 <h4 dir="rtl">التصفية حسب امتدادات الملفات</h4>
 
 ```bash
-# معالجة ملفات PDF فقط
+# Process only PDF files
 tahweel /path/to/documents/ -e pdf
 
-# معالجة الصور فقط
+# Process only images
 tahweel /path/to/documents/ -e jpg,jpeg,png
 ```
 
 <h4 dir="rtl">إعدادات التزامن</h4>
 
 ```bash
-# معالجة 4 ملفات بالتزامن
+# Process 4 files concurrently
 tahweel /path/to/documents/ -F 4
 
-# استخدام 8 عمليات OCR متزامنة لكل ملف
+# Use 8 concurrent OCR operations per file
 tahweel /path/to/documents/ -O 8
 ```
 
@@ -307,18 +307,18 @@ PAGE_SEPARATOR
 ```ruby
 require 'tahweel'
 
-# تحويل PDF إلى نص (يُرجع مصفوفة نصوص الصفحات)
+# Convert a PDF to text (returns array of page texts)
 pages = Tahweel.convert('document.pdf')
 
-# مع خيارات
+# With options
 pages = Tahweel.convert(
   'document.pdf',
-  dpi: 300,              # جودة أعلى
+  dpi: 300,              # Higher quality
   processor: :google_drive,
   concurrency: 8
 )
 
-# مع تتبع التقدم
+# With progress tracking
 pages = Tahweel.convert('document.pdf') do |progress|
   puts "Stage: #{progress[:stage]}"
   puts "Progress: #{progress[:percentage]}%"
@@ -331,7 +331,7 @@ end
 ```ruby
 require 'tahweel'
 
-# استخراج النص من صورة واحدة
+# Extract text from a single image
 text = Tahweel.extract('image.png')
 text = Tahweel.extract('photo.jpg', processor: :google_drive)
 ```
@@ -343,10 +343,10 @@ require 'tahweel'
 
 pages = Tahweel.convert('document.pdf')
 
-# الكتابة بصيغ متعددة
+# Write to multiple formats
 Tahweel::Writer.write(pages, 'output', formats: [:txt, :docx, :json])
 
-# الكتابة بصيغة واحدة مع خيارات
+# Write to a single format with options
 Tahweel::Writer.write(
   pages,
   'output',
@@ -360,7 +360,7 @@ Tahweel::Writer.write(
 ```ruby
 require 'tahweel'
 
-# استخدام FileProcessor من CLI لسير عمل كامل
+# Using the CLI FileProcessor for complete workflow
 Tahweel::CLI::FileProcessor.process('document.pdf', {
   dpi: 150,
   processor: :google_drive,
@@ -377,10 +377,10 @@ end
 ```ruby
 require 'tahweel'
 
-# الحصول على جميع الملفات المدعومة في مجلد
+# Get all supported files in a directory
 files = Tahweel::CLI::FileCollector.collect('/path/to/documents/')
 
-# التصفية حسب امتدادات محددة
+# Filter by specific extensions
 files = Tahweel::CLI::FileCollector.collect(
   '/path/to/documents/',
   extensions: ['pdf']
@@ -392,14 +392,14 @@ files = Tahweel::CLI::FileCollector.collect(
 <h3 dir="rtl">تحويل دفعي للكتب العربية</h3>
 
 ```bash
-# تحويل جميع ملفات PDF في مجلد كتب عربية بجودة عالية
+# Convert all PDFs in an Arabic books directory with high quality
 tahweel ~/arabic-books/ -f txt,docx --dpi 200 -o ~/converted-books/
 ```
 
 <h3 dir="rtl">معالجة المستندات الممسوحة ضوئياً</h3>
 
 ```bash
-# تحويل الصور الممسوحة إلى نص قابل للبحث
+# Convert scanned images to searchable text
 tahweel ~/scanned-docs/ -e jpg,png -f txt -o ~/ocr-output/
 ```
 
@@ -408,13 +408,13 @@ tahweel ~/scanned-docs/ -e jpg,png -f txt -o ~/ocr-output/
 ```ruby
 require 'tahweel'
 
-# التحويل والمعالجة في تطبيقك
+# Convert and process in your application
 def process_document(pdf_path)
   pages = Tahweel.convert(pdf_path) do |progress|
     update_progress_bar(progress[:percentage])
   end
 
-  # معالجة النص المستخرج
+  # Process the extracted text
   full_text = pages.join("\n\n")
   word_count = full_text.split.size
 
@@ -449,7 +449,7 @@ tahweel documents/ -F 2 -O 6
 <p dir="rtl">تأكد من تثبيت Poppler وأنه في مسار PATH:</p>
 
 ```bash
-which pdftoppm  # يجب أن يُرجع مساراً
+which pdftoppm  # Should return a path
 ```
 
 <h2 dir="rtl">المساهمة</h2>
@@ -469,9 +469,9 @@ which pdftoppm  # يجب أن يُرجع مساراً
 <p dir="rtl">بعد استنساخ المستودع:</p>
 
 ```bash
-bin/setup          # تثبيت التبعيات
-rake spec          # تشغيل الاختبارات
-bin/console        # موجه تفاعلي
+bin/setup          # Install dependencies
+rake spec          # Run tests
+bin/console        # Interactive prompt
 ```
 
 <h2 dir="rtl">الرخصة</h2>
