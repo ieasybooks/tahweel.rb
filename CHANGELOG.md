@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## [0.1.4] - 2026-01-07
+
+### Changed
+
+- Fix Windows encoding issue in `PdfSplitter#total_pages`
+
 ## [0.1.3] - 2026-01-07
 
 ### Changed

@@ -160,10 +160,9 @@ module Tahweel
     # @return [Integer] The page count.
     def total_pages
       @total_pages ||= begin
-        output = `#{PopplerInstaller.pdfinfo_path} "#{pdf_path}"`.encode(
-          "UTF-8",
-          invalid: :replace, undef: :replace, replace: ""
-        )
+        output = `#{PopplerInstaller.pdfinfo_path} "#{pdf_path}"`
+                 .b # Force to binary to handle Windows encoding issues
+                 .encode("UTF-8", invalid: :replace, undef: :replace, replace: "")
 
         pages = output[/Pages:\s*(\d+)/, 1]
         raise "Failed to get page count from PDF: #{output}" unless pages
