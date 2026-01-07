@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## [0.1.5] - 2026-01-07
+
+### Changed
+
+- Fix Windows encoding issue in `PdfSplitter#total_pages` using `Open3.capture2`
+
 ## [0.1.4] - 2026-01-07
 
 ### Changed
