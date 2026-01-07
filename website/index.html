@@ -629,6 +629,12 @@
             </svg>
             iEasyBooks
           </a>
+          <a href="privacy.html">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <span id="privacyText">الخصوصية</span>
+          </a>
         </div>
         <p id="footerText">
           صُنع بـ ❤️ بواسطة <a href="https://ieasybooks.com" target="_blank">iEasyBooks</a>
@@ -667,6 +673,7 @@
           installTitle: "التثبيت",
           usageTitle: "الاستخدام",
           releasesText: "الإصدارات",
+          privacyText: "الخصوصية",
           footerText: "صُنع بـ ❤️ بواسطة"
         },
         en: {
@@ -697,6 +704,7 @@
           installTitle: "Installation",
           usageTitle: "Usage",
           releasesText: "Releases",
+          privacyText: "Privacy",
           footerText: "Made with ❤️ by"
         }
       };
@@ -745,6 +753,7 @@
         document.getElementById('installTitle').textContent = c.installTitle;
         document.getElementById('usageTitle').textContent = c.usageTitle;
         document.getElementById('releasesText').textContent = c.releasesText;
+        document.getElementById('privacyText').textContent = c.privacyText;
         document.getElementById('footerText').innerHTML = c.footerText + ' <a href="https://ieasybooks.com" target="_blank">iEasyBooks</a>';
       }
 

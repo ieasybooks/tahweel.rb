@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سياسة الخصوصية | تحويل</title>
+    <meta name="description" content="سياسة الخصوصية لتطبيق تحويل - Privacy Policy for Tahweel">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    
+    <!-- Google Fonts: Poppins for English, Cairo for Arabic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+      :root {
+        --primary-color: #10b981;
+        --primary-hover: #059669;
+        --primary-light: #d1fae5;
+        --bg-gradient: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #d1fae5 100%);
+        --text-dark: #1f2937;
+        --text-light: #6b7280;
+        --card-bg: rgba(255, 255, 255, 0.95);
+        --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        background: #ecfdf5;
+      }
+
+      body {
+        min-height: 100vh;
+        font-family: 'Cairo', sans-serif;
+        color: var(--text-dark);
+        line-height: 1.8;
+        overflow-x: hidden;
+      }
+
+      body.font-en {
+        font-family: 'Poppins', sans-serif;
+      }
+
+      /* Extended gradient background */
+      body::before {
+        content: '';
+        position: fixed;
+        top: -50vh;
+        left: 0;
+        width: 100%;
+        height: 200vh;
+        background: linear-gradient(135deg, 
+          #e6f7ed 0%,
+          #f0fdf4 20%,
+          #ecfdf5 50%,
+          #d1fae5 80%,
+          #c6f6d5 100%
+        );
+        pointer-events: none;
+        z-index: -2;
+      }
+
+      body::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: 
+          radial-gradient(circle at 20% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.06) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      /* Language Toggle */
+      .lang-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-family: inherit;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 1000;
+      }
+
+      html[dir="ltr"] .lang-btn {
+        right: auto;
+        left: 20px;
+        font-family: 'Cairo', sans-serif;
+      }
+
+      .lang-btn:hover {
+        background: #f9fafb;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+      }
+
+      /* Container */
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Header */
+      header {
+        padding: 100px 0 40px;
+        text-align: center;
+      }
+
+      .logo-link {
+        display: inline-block;
+        margin-bottom: 20px;
+      }
+
+      .logo {
+        width: 100px;
+        height: auto;
+        mix-blend-mode: multiply;
+      }
+
+      header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 10px;
+      }
+
+      header p {
+        color: var(--text-light);
+        font-size: 1.1rem;
+      }
+
+      /* Content */
+      .content {
+        background: var(--card-bg);
+        border-radius: 24px;
+        padding: 50px;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 60px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.5);
+      }
+
+      .content h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 30px 0 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--primary-light);
+      }
+
+      .content h2:first-child {
+        margin-top: 0;
+      }
+
+      .content p {
+        margin-bottom: 15px;
+        color: var(--text-dark);
+      }
+
+      .content ul {
+        margin: 15px 0;
+        padding-right: 25px;
+        padding-left: 25px;
+      }
+
+      html[dir="ltr"] .content ul {
+        padding-right: 0;
+        padding-left: 25px;
+      }
+
+      .content li {
+        margin-bottom: 10px;
+        color: var(--text-dark);
+      }
+
+      .content a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .content a:hover {
+        text-decoration: underline;
+      }
+
+      .last-updated {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+        color: var(--text-light);
+        font-size: 0.9rem;
+      }
+
+      /* Back Link */
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        margin-bottom: 30px;
+        transition: all 0.3s ease;
+      }
+
+      .back-link:hover {
+        gap: 12px;
+      }
+
+      .back-link svg {
+        width: 20px;
+        height: 20px;
+        transition: transform 0.3s ease;
+      }
+
+      html[dir="rtl"] .back-link svg {
+        transform: rotate(180deg);
+      }
+
+      html[dir="rtl"] .back-link:hover svg {
+        transform: rotate(180deg) translateX(4px);
+      }
+
+      html[dir="ltr"] .back-link:hover svg {
+        transform: translateX(-4px);
+      }
+
+      /* Footer */
+      footer {
+        padding: 40px 0;
+        text-align: center;
+        color: var(--text-light);
+        font-size: 0.9rem;
+      }
+
+      footer a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        header { padding: 80px 0 30px; }
+        header h1 { font-size: 1.8rem; }
+        .content { padding: 30px 20px; }
+        .content h2 { font-size: 1.3rem; }
+        .lang-btn { padding: 8px 16px; font-size: 0.8rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Language Toggle -->
+    <button class="lang-btn" onclick="toggleLanguage()" id="langBtn">
+      <span>🌐</span> <span id="btnText">English</span>
+    </button>
+
+    <div class="container">
+      <!-- Header -->
+      <header>
+        <a href="index.html" class="logo-link">
+          <img src="logo.png" alt="Tahweel Logo" class="logo">
+        </a>
+        <h1 id="pageTitle">سياسة الخصوصية</h1>
+        <p id="pageSubtitle">آخر تحديث: يناير 2026</p>
+      </header>
+
+      <!-- Back Link -->
+      <a href="index.html" class="back-link" id="backLink">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        <span id="backText">العودة للصفحة الرئيسية</span>
+      </a>
+
+      <!-- Content -->
+      <div class="content">
+        <div id="content-ar">
+          <h2>مقدمة</h2>
+          <p>مرحباً بك في تحويل. نحن نقدر خصوصيتك ونلتزم بحماية بياناتك الشخصية. توضح سياسة الخصوصية هذه كيفية جمع واستخدام وحماية معلوماتك عند استخدام تطبيق تحويل.</p>
+
+          <h2>البيانات التي نجمعها</h2>
+          <p>يستخدم تحويل واجهة برمجة تطبيقات Google Drive لإجراء التعرف الضوئي على الحروف (OCR) على ملفات PDF والصور. عند استخدام خدمتنا:</p>
+          <ul>
+            <li><strong>الوصول إلى Google Drive:</strong> نطلب إذن الوصول إلى Google Drive الخاص بك لرفع الملفات مؤقتاً لمعالجة OCR.</li>
+            <li><strong>معالجة الملفات:</strong> يتم رفع ملفات PDF والصور الخاصة بك مؤقتاً إلى Google Drive لاستخراج النص.</li>
+            <li><strong>لا تخزين دائم:</strong> يتم حذف جميع الملفات المرفوعة تلقائياً من Google Drive فور اكتمال معالجة OCR.</li>
+          </ul>
+
+          <h2>كيف نستخدم بياناتك</h2>
+          <p>نستخدم الوصول الممنوح فقط من أجل:</p>
+          <ul>
+            <li>رفع ملفاتك مؤقتاً إلى Google Drive لمعالجة OCR</li>
+            <li>استخراج النص من ملفاتك باستخدام إمكانيات OCR في Google Drive</li>
+            <li>حذف الملفات المرفوعة فوراً بعد المعالجة</li>
+          </ul>
+          <p>نحن لا نقوم بـ:</p>
+          <ul>
+            <li>تخزين ملفاتك أو محتواها على خوادمنا</li>
+            <li>مشاركة بياناتك مع أطراف ثالثة</li>
+            <li>استخدام بياناتك لأي غرض آخر غير معالجة OCR</li>
+            <li>الوصول إلى أي ملفات أخرى في Google Drive الخاص بك</li>
+          </ul>
+
+          <h2>أمان البيانات</h2>
+          <p>نتخذ أمان بياناتك على محمل الجد:</p>
+          <ul>
+            <li>جميع الاتصالات مشفرة باستخدام HTTPS/TLS</li>
+            <li>يتم تخزين بيانات اعتماد OAuth بشكل آمن على جهازك المحلي</li>
+            <li>لا نقوم بتخزين أو نقل ملفاتك إلى أي خوادم خارج Google Drive</li>
+            <li>يتم حذف الملفات فوراً بعد المعالجة</li>
+          </ul>
+
+          <h2>حقوقك</h2>
+          <p>لديك الحق في:</p>
+          <ul>
+            <li>إلغاء الوصول إلى Google Drive في أي وقت من خلال إعدادات حساب Google الخاص بك</li>
+            <li>طلب معلومات حول البيانات التي نعالجها</li>
+            <li>التواصل معنا بخصوص أي مخاوف تتعلق بالخصوصية</li>
+          </ul>
+
+          <h2>خدمات الطرف الثالث</h2>
+          <p>يستخدم تحويل خدمات Google التالية:</p>
+          <ul>
+            <li><strong>Google Drive API:</strong> لرفع الملفات ومعالجة OCR. يرجى مراجعة <a href="https://policies.google.com/privacy" target="_blank">سياسة خصوصية Google</a> لمزيد من المعلومات.</li>
+          </ul>
+
+          <h2>التغييرات على هذه السياسة</h2>
+          <p>قد نقوم بتحديث سياسة الخصوصية هذه من وقت لآخر. سنقوم بإعلامك بأي تغييرات عن طريق نشر السياسة الجديدة على هذه الصفحة وتحديث تاريخ "آخر تحديث".</p>
+
+          <h2>تواصل معنا</h2>
+          <p>إذا كان لديك أي أسئلة حول سياسة الخصوصية هذه، يرجى التواصل معنا:</p>
+          <ul>
+            <li>GitHub: <a href="https://github.com/ieasybooks/tahweel.rb" target="_blank">github.com/ieasybooks/tahweel.rb</a></li>
+            <li>الموقع: <a href="https://ieasybooks.com" target="_blank">ieasybooks.com</a></li>
+          </ul>
+        </div>
+
+        <div id="content-en" style="display: none;">
+          <h2>Introduction</h2>
+          <p>Welcome to Tahweel. We value your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, and protect your information when you use the Tahweel application.</p>
+
+          <h2>Data We Collect</h2>
+          <p>Tahweel uses the Google Drive API to perform Optical Character Recognition (OCR) on PDF and image files. When you use our service:</p>
+          <ul>
+            <li><strong>Google Drive Access:</strong> We request permission to access your Google Drive to temporarily upload files for OCR processing.</li>
+            <li><strong>File Processing:</strong> Your PDF and image files are temporarily uploaded to Google Drive for text extraction.</li>
+            <li><strong>No Permanent Storage:</strong> All uploaded files are automatically deleted from Google Drive immediately after OCR processing is complete.</li>
+          </ul>
+
+          <h2>How We Use Your Data</h2>
+          <p>We use the granted access solely to:</p>
+          <ul>
+            <li>Temporarily upload your files to Google Drive for OCR processing</li>
+            <li>Extract text from your files using Google Drive's OCR capabilities</li>
+            <li>Delete the uploaded files immediately after processing</li>
+          </ul>
+          <p>We do NOT:</p>
+          <ul>
+            <li>Store your files or their contents on our servers</li>
+            <li>Share your data with third parties</li>
+            <li>Use your data for any purpose other than OCR processing</li>
+            <li>Access any other files in your Google Drive</li>
+          </ul>
+
+          <h2>Data Security</h2>
+          <p>We take your data security seriously:</p>
+          <ul>
+            <li>All communications are encrypted using HTTPS/TLS</li>
+            <li>OAuth credentials are stored securely on your local device</li>
+            <li>We do not store or transmit your files to any servers outside of Google Drive</li>
+            <li>Files are deleted immediately after processing</li>
+          </ul>
+
+          <h2>Your Rights</h2>
+          <p>You have the right to:</p>
+          <ul>
+            <li>Revoke access to your Google Drive at any time through your Google account settings</li>
+            <li>Request information about the data we process</li>
+            <li>Contact us with any privacy concerns</li>
+          </ul>
+
+          <h2>Third-Party Services</h2>
+          <p>Tahweel uses the following Google services:</p>
+          <ul>
+            <li><strong>Google Drive API:</strong> For file upload and OCR processing. Please review <a href="https://policies.google.com/privacy" target="_blank">Google's Privacy Policy</a> for more information.</li>
+          </ul>
+
+          <h2>Changes to This Policy</h2>
+          <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the "Last Updated" date.</p>
+
+          <h2>Contact Us</h2>
+          <p>If you have any questions about this Privacy Policy, please contact us:</p>
+          <ul>
+            <li>GitHub: <a href="https://github.com/ieasybooks/tahweel.rb" target="_blank">github.com/ieasybooks/tahweel.rb</a></li>
+            <li>Website: <a href="https://ieasybooks.com" target="_blank">ieasybooks.com</a></li>
+          </ul>
+        </div>
+
+        <p class="last-updated" id="lastUpdated">آخر تحديث: يناير 2026</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container">
+        <p id="footerText">
+          © 2026 <a href="https://ieasybooks.com" target="_blank">iEasyBooks</a>. جميع الحقوق محفوظة.
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      const content = {
+        ar: {
+          btn: "English",
+          pageTitle: "سياسة الخصوصية",
+          pageSubtitle: "آخر تحديث: يناير 2026",
+          backText: "العودة للصفحة الرئيسية",
+          lastUpdated: "آخر تحديث: يناير 2026",
+          footerText: "© 2026 <a href='https://ieasybooks.com' target='_blank'>iEasyBooks</a>. جميع الحقوق محفوظة.",
+          docTitle: "سياسة الخصوصية | تحويل"
+        },
+        en: {
+          btn: "العربية",
+          pageTitle: "Privacy Policy",
+          pageSubtitle: "Last Updated: January 2026",
+          backText: "Back to Home",
+          lastUpdated: "Last Updated: January 2026",
+          footerText: "© 2026 <a href='https://ieasybooks.com' target='_blank'>iEasyBooks</a>. All rights reserved.",
+          docTitle: "Privacy Policy | Tahweel"
+        }
+      };
+
+      let currentLang = 'ar';
+
+      function toggleLanguage() {
+        currentLang = currentLang === 'ar' ? 'en' : 'ar';
+        const c = content[currentLang];
+
+        // Toggle Direction and Lang
+        const htmlEl = document.documentElement;
+        htmlEl.lang = currentLang;
+        htmlEl.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+
+        // Toggle Font
+        document.body.classList.toggle('font-en', currentLang === 'en');
+
+        // Update content
+        document.title = c.docTitle;
+        document.getElementById('btnText').textContent = c.btn;
+        document.getElementById('pageTitle').textContent = c.pageTitle;
+        document.getElementById('pageSubtitle').textContent = c.pageSubtitle;
+        document.getElementById('backText').textContent = c.backText;
+        document.getElementById('lastUpdated').textContent = c.lastUpdated;
+        document.getElementById('footerText').innerHTML = c.footerText;
+
+        // Toggle content sections
+        document.getElementById('content-ar').style.display = currentLang === 'ar' ? 'block' : 'none';
+        document.getElementById('content-en').style.display = currentLang === 'en' ? 'block' : 'none';
+      }
+    </script>
+  </body>
+</html>
