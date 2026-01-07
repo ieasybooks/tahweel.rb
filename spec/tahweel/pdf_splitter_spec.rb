@@ -21,8 +21,8 @@ RSpec.describe Tahweel::PdfSplitter do
     allow(Tahweel::PopplerInstaller).to receive(:ensure_installed!)
     allow(Tahweel::PopplerInstaller).to receive_messages(pdftoppm_path:, pdfinfo_path:)
 
-    # Mock pdfinfo execution
-    allow(splitter).to receive(:`).with(/#{pdfinfo_path} "#{pdf_path}"/).and_return("Pages: 2\n")
+    # Mock pdfinfo execution via Open3
+    allow(Open3).to receive(:capture2).with(pdfinfo_path, pdf_path).and_return(["Pages: 2\n", double(success?: true)])
 
     # Mock system execution for pdftoppm
     allow(splitter).to receive(:system).with(pdftoppm_path, any_args).and_return(true)
@@ -53,7 +53,7 @@ RSpec.describe Tahweel::PdfSplitter do
 
       it "gets total pages using pdfinfo" do
         splitter.split
-        expect(splitter).to have_received(:`).with(/#{pdfinfo_path} "#{pdf_path}"/)
+        expect(Open3).to have_received(:capture2).with(pdfinfo_path, pdf_path)
       end
 
       it "processes all pages" do # rubocop:disable RSpec/MultipleExpectations
@@ -144,7 +144,10 @@ RSpec.describe Tahweel::PdfSplitter do
 
     context "when pdfinfo fails to return page count" do
       before do
-        allow(splitter).to receive(:`).with(/#{pdfinfo_path} "#{pdf_path}"/).and_return("Error processing PDF")
+        allow(Open3).to receive(:capture2).with(
+          pdfinfo_path,
+          pdf_path
+        ).and_return(["Error processing PDF", double(success?: false)])
       end
 
       it "raises a RuntimeError" do
