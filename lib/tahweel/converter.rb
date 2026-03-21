@@ -29,13 +29,10 @@ module Tahweel
     #   remaining_pages: Integer
     # }
     # @return [Array<String>] An array containing the text of each page.
-    def self.convert(
-      pdf_path,
-      dpi: PdfSplitter::DEFAULT_DPI,
-      processor: :google_drive,
-      concurrency: DEFAULT_CONCURRENCY,
-      &
-    ) = new(pdf_path, dpi:, processor:, concurrency:).convert(&)
+    def self.convert(pdf_path, dpi: PdfSplitter::DEFAULT_DPI, processor: :google_drive,
+                     concurrency: DEFAULT_CONCURRENCY, &)
+      new(pdf_path, dpi:, processor:, concurrency:).convert(&)
+    end
 
     # Initializes the Converter.
     #
