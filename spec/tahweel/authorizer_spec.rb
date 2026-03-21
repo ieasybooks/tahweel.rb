@@ -209,6 +209,21 @@ RSpec.describe Tahweel::Authorizer do
       )
     end
 
+    it "extracts code when it is not the first query parameter" do # rubocop:disable RSpec/MultipleExpectations,RSpec/ExampleLength
+      allow(server).to receive(:accept).and_return(valid_socket)
+
+      # Valid request with code as second parameter (Google OAuth2 callback format)
+      allow(valid_socket).to receive(:gets).and_return("GET /oauth2callback?iss=https://accounts.google.com&code=secret_code&scope=drive.file HTTP/1.1")
+      allow(valid_socket).to receive(:print)
+
+      result = authorizer.authorize
+
+      expect(result).to eq(:creds)
+      expect(google_authorizer).to have_received(:get_and_store_credentials_from_code).with(
+        hash_including(code: "secret_code")
+      )
+    end
+
     it "handles empty requests (closed connections) gracefully" do # rubocop:disable RSpec/MultipleExpectations,RSpec/ExampleLength
       allow(server).to receive(:accept).and_return(empty_socket, valid_socket)
 

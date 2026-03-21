@@ -143,10 +143,10 @@ module Tahweel
     # @return [String, nil] The authorization code if the request matches the callback pattern.
     def handle_request(socket, request_line)
       # Match GET requests containing the 'code' parameter
-      # Works for /?code=... or /oauth2callback?code=...
-      if request_line =~ /GET .*\?code=(.*) HTTP/
+      # Works for /?code=..., /oauth2callback?code=..., or ?iss=...&code=...&scope=...
+      if request_line =~ /GET .*[?&]code=([^&\s]+).* HTTP/
         respond_with_success(socket)
-        Regexp.last_match(1).split.first
+        Regexp.last_match(1)
       else
         respond_with_not_found(socket)
       end
