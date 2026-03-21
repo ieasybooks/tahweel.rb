@@ -213,7 +213,9 @@ RSpec.describe Tahweel::Authorizer do
       allow(server).to receive(:accept).and_return(valid_socket)
 
       # Valid request with code as second parameter (Google OAuth2 callback format)
+      # rubocop:disable Layout/LineLength
       allow(valid_socket).to receive(:gets).and_return("GET /oauth2callback?iss=https://accounts.google.com&code=secret_code&scope=drive.file HTTP/1.1")
+      # rubocop:enable Layout/LineLength
       allow(valid_socket).to receive(:print)
 
       result = authorizer.authorize
