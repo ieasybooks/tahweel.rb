@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## [0.1.6] - 2026-03-28
+
+### Fixed
+
+- Fix OAuth callback to handle `code` as non-first query parameter (e.g., `?iss=...&code=...&scope=...`)
+
 ## [0.1.5] - 2026-01-07
 
 ### Changed
