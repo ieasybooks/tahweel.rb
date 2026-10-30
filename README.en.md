@@ -1,3 +1,7 @@
+> **Archived:** This repository is no longer maintained. The new maintained version is [tahweel-rs](https://github.com/ieasybooks/tahweel-rs).
+>
+> The documentation below describes this archived implementation.
+
 <p align="center">
   <img src="assets/logo.png" alt="Tahweel Logo" width="200" />
 </p>
